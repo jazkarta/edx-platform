@@ -104,6 +104,7 @@ def preview_module_system(request, preview_id, descriptor):
 
     course_id = get_course_for_item(descriptor.location).location.course_id
     return ModuleSystem(
+        static_url=settings.STATIC_URL,
         ajax_url=reverse('preview_dispatch', args=[preview_id, descriptor.location.url(), '']).rstrip('/'),
         # TODO (cpennington): Do we want to track how instructors are using the preview problems?
         track_function=lambda event_type, event: None,

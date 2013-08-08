@@ -256,6 +256,7 @@ class InputTypeBase(object):
             'value': self.value,
             'status': self.status,
             'msg': self.msg,
+            'STATIC_URL': self.system.STATIC_URL,
         }
         context.update((a, v) for (
             a, v) in self.loaded_attributes.iteritems() if a in self.to_render)

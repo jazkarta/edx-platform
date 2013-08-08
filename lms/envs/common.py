@@ -587,7 +587,7 @@ MIDDLEWARE_CLASSES = (
 
     # catches any uncaught RateLimitExceptions and returns a 403 instead of a 500
     'ratelimitbackend.middleware.RateLimitMiddleware',
-    
+
     # For A/B testing
     'waffle.middleware.WaffleMiddleware',
 )
@@ -606,10 +606,9 @@ courseware_js = (
     sorted(rooted_glob(PROJECT_ROOT / 'static', 'coffee/src/modules/**/*.js'))
 )
 
-# 'js/vendor/RequireJS.js' - Require JS wrapper.
-# See https://edx-wiki.atlassian.net/wiki/display/LMS/Integration+of+Require+JS+into+the+system
 main_vendor_js = [
-    'js/vendor/RequireJS.js',
+    'js/vendor/require.js',
+    'js/RequireJS-namespace.js',
     'js/vendor/json2.js',
     'js/vendor/jquery.min.js',
     'js/vendor/jquery-ui.min.js',
