@@ -179,6 +179,10 @@ MITX_FEATURES = {
 
     # Enable flow for payments for course registration (DIFFERENT from verified student flow)
     'ENABLE_PAID_COURSE_REGISTRATION': False,
+
+    # Disable instructor dash buttons for downloading course data
+    # when enrollment exceeds this number
+    'MAX_ENROLLMENT_INSTR_BUTTONS': 500,
 }
 
 # Used for A/B testing
