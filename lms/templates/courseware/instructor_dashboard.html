@@ -153,12 +153,16 @@ function goto( mode)
 
     <hr width="40%" style="align:left">
     <h2>${_("Grade Downloads")}</h2>
-    <p><font color="${'red' if disable_buttons else 'none'}">
-      ${_("Note: grade downloads are disabled for larger courses "
-          "(courses with more than {max_enrollment} students).").format(
-            max_enrollment=settings.MITX_FEATURES['MAX_ENROLLMENT_INSTR_BUTTONS']
-          )}
-    </font></p>
+    % if disable_buttons:
+      <p><font color="red">
+      ${_("Note: these features are known to timeout for larger courses. "
+          "We have temporarily disabled them for courses with "
+          "more than {max_enrollment} students. We are working on "
+          "fixing this issue.").format(
+          max_enrollment=settings.MITX_FEATURES['MAX_ENROLLMENT_INSTR_BUTTONS']
+        )}
+      </font></p>
+    % endif
 
     <p>
     <a href="${reverse('gradebook', kwargs=dict(course_id=course.id))}" class="${'is-disabled' if disable_buttons else ''}">${_("Gradebook")}</a>
@@ -380,13 +384,17 @@ function goto( mode)
 
     <hr width="40%" style="align:left">
     <h2>${_("Enrollment Data")}</h2>
-    <p><font color="${'red' if disable_buttons else 'none'}">
-      ${_("Note: enrollment data dumps are disabled for larger courses "
-          "(courses with more than {max_enrollment} students).").format(
-            max_enrollment=settings.MITX_FEATURES['MAX_ENROLLMENT_INSTR_BUTTONS']
-          )}
-    </font></p>
-    <br>
+    % if disable_buttons:
+    <p><font color="red">
+      ${_("Note: these features are known to timeout for larger courses. "
+          "We have temporarily disabled them for courses with "
+          "more than {max_enrollment} students. We are working on "
+          "fixing this issue.").format(
+          max_enrollment=settings.MITX_FEATURES['MAX_ENROLLMENT_INSTR_BUTTONS']
+        )}
+      </font></p>
+      <br>
+    % endif
 
     <input type="submit" name="action" value="List enrolled students" class="${'is-disabled' if disable_buttons else ''}">
     <input type="submit" name="action" value="List students who may enroll but may not have yet signed up" class="${'is-disabled' if disable_buttons else ''}">
