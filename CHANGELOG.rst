@@ -313,3 +313,5 @@ Common: Updated CodeJail.
 Common: Allow setting of authentication session cookie name.
 
 LMS: Option to email students when enroll/un-enroll them.
+
+CMS: added restful interface for finding orphans in courses: GET http://host/org.course/orphan returns json array of ids
