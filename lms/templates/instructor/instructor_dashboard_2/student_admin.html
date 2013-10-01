@@ -1,4 +1,5 @@
 <%! from django.utils.translation import ugettext as _ %>
+<script type="text/javascript" src="jsi18n/"></script>
 <%page args="section_data"/>
 
 <div class="student-specific-container action-type-container">
@@ -59,7 +60,6 @@
   </p>
 
   <p>
-    <!-- Doesn't give any type of notification upon success -->
   <input type="button" name="reset-attempts-single" value="${_("Reset Student Attempts")}" data-endpoint="${ section_data['reset_student_attempts_url'] }">
 
   %if settings.MITX_FEATURES.get('ENABLE_INSTRUCTOR_BACKGROUND_TASKS') and section_data['access']['instructor']:

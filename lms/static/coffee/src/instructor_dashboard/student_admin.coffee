@@ -9,12 +9,6 @@ std_ajax_err = -> window.InstructorDashboard.util.std_ajax_err.apply this, argum
 load_IntervalManager = -> window.InstructorDashboard.util.IntervalManager
 
 
-# wrap window.confirm
-# display `msg`
-# run `ok` or `cancel` depending on response
-confirm_then = ({msg, ok, cancel}) ->
-  if window.confirm msg then ok?() else cancel?()
-
 # get jquery element and assert its existance
 find_and_assert = ($root, selector) ->
   item = $root.find selector
@@ -121,7 +115,7 @@ class StudentAdmin
       e.preventDefault()
       unique_student_identifier = @$field_student_select_progress.val()
       if not unique_student_identifier
-        return @$request_response_error_progress.text "Please enter a student email address or username."
+        return @$request_response_error_progress.text gettext("Please enter a student email address or username.")
 
       $.ajax
         dataType: 'json'
@@ -129,7 +123,7 @@ class StudentAdmin
         data: unique_student_identifier: unique_student_identifier
         success: @clear_errors_then (data) ->
           window.location = data.progress_url
-        error: std_ajax_err => @$request_response_error_progress.text "Error getting student progress url for '#{unique_student_identifier}'."
+        error: std_ajax_err => @$request_response_error_progress.text gettext("Error getting student progress url for '#{unique_student_identifier}'.")
 
     # enroll student
     @$btn_enroll.click =>
@@ -143,7 +137,7 @@ class StudentAdmin
         url: @$btn_enroll.data 'endpoint'
         data: send_data
         success: @clear_errors_then -> console.log "student #{send_data.emails} enrolled"
-        error: std_ajax_err => @$request_response_error_progress.text "Error enrolling student '#{send_data.emails}'."
+        error: std_ajax_err => @$request_response_error_progress.text gettext("Error enrolling student '#{send_data.emails}'.")
 
     # unenroll student
     @$btn_unenroll.click =>
@@ -156,16 +150,16 @@ class StudentAdmin
         url: @$btn_unenroll.data 'endpoint'
         data: send_data
         success: @clear_errors_then -> console.log "student #{send_data.emails} unenrolled"
-        error: std_ajax_err => @$request_response_error_progress.text "Error unenrolling student '#{send_data.emails}'."
+        error: std_ajax_err => @$request_response_error_progress.text gettext("Error unenrolling student '#{send_data.emails}'.")
 
     # reset attempts for student on problem
     @$btn_reset_attempts_single.click =>
       unique_student_identifier = @$field_student_select_grade.val()
       problem_to_reset = @$field_problem_select_single.val()
       if not unique_student_identifier
-        return @$request_response_error_grade.text "Please enter a student email address or username."
+        return @$request_response_error_grade.text gettext("Please enter a student email address or username.")
       if not problem_to_reset
-        return @$request_response_error_grade.text "Please enter a problem urlname."
+        return @$request_response_error_grade.text gettext("Please enter a problem urlname.")
       send_data =
         unique_student_identifier: unique_student_identifier
         problem_to_reset: problem_to_reset
@@ -175,19 +169,19 @@ class StudentAdmin
         dataType: 'json'
         url: @$btn_reset_attempts_single.data 'endpoint'
         data: send_data
-        success: @clear_errors_then -> alert "Success! Problem attempts reset for problem '#{problem_to_reset}' and student '#{unique_student_identifier}'."
-        error: std_ajax_err => @$request_response_error_grade.text "Error resetting problem attempts for problem '#{problem_to_reset}' and student '#{unique_student_identifier}'."
+        success: @clear_errors_then -> alert gettext("Success! Problem attempts reset for problem '#{problem_to_reset}' and student '#{unique_student_identifier}'.")
+        error: std_ajax_err => @$request_response_error_grade.text gettext("Error resetting problem attempts for problem '#{problem_to_reset}' and student '#{unique_student_identifier}'.")
 
     # delete state for student on problem
     @$btn_delete_state_single.click =>
       unique_student_identifier = @$field_student_select_grade.val()
       problem_to_reset = @$field_problem_select_single.val()
       if not unique_student_identifier
-        return @$request_response_error_grade.text "Please enter a student email address or username."
+        return @$request_response_error_grade.text gettext("Please enter a student email address or username.")
       if not problem_to_reset
-        return @$request_response_error_grade.text "Please enter a problem urlname."
+        return @$request_response_error_grade.text gettext("Please enter a problem urlname.")
 
-      if window.confirm "Delete student '#{unique_student_identifier}'s state on problem '#{problem_to_reset}'?"
+      if window.confirm gettext("Delete student '#{unique_student_identifier}'s state on problem '#{problem_to_reset}'?")
         send_data =
           unique_student_identifier: unique_student_identifier
           problem_to_reset: problem_to_reset
@@ -197,8 +191,8 @@ class StudentAdmin
           dataType: 'json'
           url: @$btn_delete_state_single.data 'endpoint'
           data: send_data
-          success: @clear_errors_then -> alert 'Module state successfully deleted.'
-          error: std_ajax_err => @$request_response_error_grade.text "Error deleting problem state."
+          success: @clear_errors_then -> alert gettext('Module state successfully deleted.')
+          error: std_ajax_err => @$request_response_error_grade.text gettext("Error deleting problem state.")
       else
         @clear_errors()
 
@@ -207,9 +201,9 @@ class StudentAdmin
       unique_student_identifier = @$field_student_select_grade.val()
       problem_to_reset = @$field_problem_select_single.val()
       if not unique_student_identifier
-        return @$request_response_error_grade.text "Please enter a student email address or username."
+        return @$request_response_error_grade.text gettext("Please enter a student email address or username.")
       if not problem_to_reset
-        return @$request_response_error_grade.text "Please enter a problem urlname."
+        return @$request_response_error_grade.text gettext("Please enter a problem urlname.")
       send_data =
         unique_student_identifier: unique_student_identifier
         problem_to_reset: problem_to_reset
@@ -218,17 +212,17 @@ class StudentAdmin
         dataType: 'json'
         url: @$btn_rescore_problem_single.data 'endpoint'
         data: send_data
-        success: @clear_errors_then -> alert "Started rescore problem task for problem '#{problem_to_reset}' and student '#{unique_student_identifier}'. Click the 'Show Background Task History for Student' button to see the status of the task."
-        error: std_ajax_err => @$request_response_error_grade.text "Error starting a task to rescore problem '#{problem_to_reset}' for student '#{unique_student_identifier}'."
+        success: @clear_errors_then -> alert gettext("Started rescore problem task for problem '#{problem_to_reset}' and student '#{unique_student_identifier}'. Click the 'Show Background Task History for Student' button to see the status of the task.")
+        error: std_ajax_err => @$request_response_error_grade.text gettext("Error starting a task to rescore problem '#{problem_to_reset}' for student '#{unique_student_identifier}'.")
 
     # list task history for student+problem
     @$btn_task_history_single.click =>
       unique_student_identifier = @$field_student_select_grade.val()
       problem_to_reset = @$field_problem_select_single.val()
       if not unique_student_identifier
-        return @$request_response_error_grade.text "Please enter a student email address or username."
+        return @$request_response_error_grade.text gettext("Please enter a student email address or username.")
       if not problem_to_reset
-        return @$request_response_error_grade.text "Please enter a problem urlname."
+        return @$request_response_error_grade.text gettext("Please enter a problem urlname.")
       send_data =
         unique_student_identifier: unique_student_identifier
         problem_urlname: problem_to_reset
@@ -239,14 +233,14 @@ class StudentAdmin
         data: send_data
         success: @clear_errors_then (data) =>
           create_task_list_table @$table_task_history_single, data.tasks
-        error: std_ajax_err => @$request_response_error_grade.text "Error getting task history for student '#{unique_student_identifier}' and problem '#{problem_to_reset}'."
+        error: std_ajax_err => @$request_response_error_grade.text gettext("Error getting task history for student '#{unique_student_identifier}' and problem '#{problem_to_reset}'.")
 
     # start task to reset attempts on problem for all students
     @$btn_reset_attempts_all.click =>
       problem_to_reset = @$field_problem_select_all.val()
       if not problem_to_reset
-        return @$request_response_error_all.text "Please enter a problem urlname."
-      if window.confirm "Reset attempts for all students on problem '#{@$field_problem_select_all.val()}'?"
+        return @$request_response_error_all.text gettext("Please enter a problem urlname.")
+      if window.confirm gettext("Reset attempts for all students on problem '#{@$field_problem_select_all.val()}'?")
         send_data =
           all_students: true
           problem_to_reset: problem_to_reset
@@ -255,8 +249,8 @@ class StudentAdmin
           dataType: 'json'
           url: @$btn_reset_attempts_all.data 'endpoint'
           data: send_data
-          success: @clear_errors_then -> alert "Successfully started task to reset attempts for problem '#{problem_to_reset}'. Click the 'Show Background Task History for Problem' button to see the status of the task."
-          error: std_ajax_err => @$request_response_error_all.text "Error starting a task to reset attempts for all students on this problem."
+          success: @clear_errors_then -> alert gettext("Successfully started task to reset attempts for problem '#{problem_to_reset}'. Click the 'Show Background Task History for Problem' button to see the status of the task.")
+          error: std_ajax_err => @$request_response_error_all.text gettext("Error starting a task to reset attempts for all students on this problem.")
       else
         @clear_errors()
 
@@ -264,8 +258,8 @@ class StudentAdmin
     @$btn_rescore_problem_all.click =>
       problem_to_reset = @$field_problem_select_all.val()
       if not problem_to_reset
-        return @$request_response_error_all.text "Please enter a problem urlname."
-      if window.confirm "Rescore problem '#{@$field_problem_select_all.val()}' for all students?"
+        return @$request_response_error_all.text gettext("Please enter a problem urlname.")
+      if window.confirm gettext("Rescore problem '#{@$field_problem_select_all.val()}' for all students?")
         send_data =
           all_students: true
           problem_to_reset: problem_to_reset
@@ -274,8 +268,8 @@ class StudentAdmin
           dataType: 'json'
           url: @$btn_rescore_problem_all.data 'endpoint'
           data: send_data
-          success: @clear_errors_then -> alert "Successfully started task to rescore problem '#{problem_to_reset}' for all students. Click the 'Show Background Task History for Problem' button to see the status of the task."
-          error: std_ajax_err => @$request_response_error_all.text "Error starting a task to rescore this problem for all students."
+          success: @clear_errors_then -> alert gettext("Successfully started task to rescore problem '#{problem_to_reset}' for all students. Click the 'Show Background Task History for Problem' button to see the status of the task.")
+          error: std_ajax_err => @$request_response_error_all.text gettext("Error starting a task to rescore this problem for all students.")
       else
         @clear_errors()
 
@@ -285,7 +279,7 @@ class StudentAdmin
         problem_urlname: @$field_problem_select_all.val()
 
       if not send_data.problem_urlname
-        return @$request_response_error_all.text "Please enter a problem urlname."
+        return @$request_response_error_all.text gettext("Please enter a problem urlname.")
 
       $.ajax
         dataType: 'json'
@@ -293,7 +287,7 @@ class StudentAdmin
         data: send_data
         success: @clear_errors_then (data) =>
           create_task_list_table @$table_task_history_all, data.tasks
-        error: std_ajax_err => @$request_response_error_all.text "Error listing task history for this student and problem."
+        error: std_ajax_err => @$request_response_error_all.text gettext("Error listing task history for this student and problem.")
 
   reload_running_tasks_list: =>
     list_endpoint = @$table_running_tasks.data 'endpoint'
