@@ -146,22 +146,28 @@ function goto( mode)
 %if modeflag.get('Grades'):
 
     %if offline_grade_log:
-      <p><font color='orange'>Pre-computed grades ${offline_grade_log} available: Use?
-          <input type='checkbox' name='use_offline_grades' value='${_("yes")}'></font> </p>
+      <p>
+        <span class="copy-warning">Pre-computed grades ${offline_grade_log} available: Use?
+          <input type='checkbox' name='use_offline_grades' value='${_("yes")}'>
+        </span>
+      </p>
     %endif
 
 
     <hr width="40%" style="align:left">
     <h2>${_("Grade Downloads")}</h2>
     % if disable_buttons:
-      <p><font color="red">
-      ${_("Note: these features are known to timeout for larger courses. "
-          "We have temporarily disabled them for courses with "
-          "more than {max_enrollment} students. We are working on "
-          "fixing this issue.").format(
-          max_enrollment=settings.MITX_FEATURES['MAX_ENROLLMENT_INSTR_BUTTONS']
-        )}
-      </font></p>
+    <div class="msg msg-warning">
+
+      <div class="copy">
+        <p>${_("Note: these features are known to timeout for larger courses. "
+            "We have temporarily disabled them for courses with "
+            "more than {max_enrollment} students. We are working on "
+            "fixing this issue.").format(
+            max_enrollment=settings.MITX_FEATURES['MAX_ENROLLMENT_INSTR_BUTTONS']
+          )}</p>
+      </div>
+    </div>
     % endif
 
     <p>
@@ -202,7 +208,7 @@ function goto( mode)
     <p>${_("The assignments defined for this course should match the ones stored in the gradebook, for this to work properly!")}</p>
 
     <ul>
-    <li>${_("Gradebook name:")} <font color="green">${rg.get('name','None defined!')}</font>
+    <li>${_("Gradebook name:")} <span class="copy-confirm">${rg.get('name','None defined!')}</span>
     <br/>
     <br/>
     <input type="submit" name="action" value="List assignments available in remote gradebook">
@@ -385,15 +391,17 @@ function goto( mode)
     <hr width="40%" style="align:left">
     <h2>${_("Enrollment Data")}</h2>
     % if disable_buttons:
-    <p><font color="red">
-      ${_("Note: these features are known to timeout for larger courses. "
+    <div class="msg msg-warning">
+
+      <div class="copy">
+        <p>${_("Note: these features are known to timeout for larger courses. "
           "We have temporarily disabled them for courses with "
           "more than {max_enrollment} students. We are working on "
           "fixing this issue.").format(
           max_enrollment=settings.MITX_FEATURES['MAX_ENROLLMENT_INSTR_BUTTONS']
-        )}
-      </font></p>
-      <br>
+        )}</p>
+      </div>
+    </div>
     % endif
 
     <input type="submit" name="action" value="List enrolled students" class="${'is-disabled' if disable_buttons else ''}">
@@ -408,7 +416,7 @@ function goto( mode)
 
     <p>${_("Pull enrollment from remote gradebook")}</p>
     <ul>
-    <li>${_("Gradebook name:")} <font color="green">${rg.get('name','None defined!')}</font>
+    <li>${_("Gradebook name:")} <span class="copy-confirm">${rg.get('name','None defined!')}</span>
     <li>${_("Section:")} <input type="text" name="gradebook_section" size=40 value="${rg.get('section','')}"></li>
     </ul>
     <input type="submit" name="action" value="List sections available in remote gradebook">
