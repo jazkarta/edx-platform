@@ -170,6 +170,15 @@ class @StaffGrading
     @grading_wrapper = $('.grading-wrapper')
 
     @feedback_area = $('.feedback-area')
+    @ice_legend = $('<p class="ice-legend">
+                      <span class="ins">${_("This is an insertion.")}</span>&nbsp;
+                      <span class="del">${_("This is a deletion.")}</span>&nbsp;
+                      <span class="ins">${_("[This is a comment.]")}</span>&nbsp;
+                      <span class="ice-controls">
+                        <a href="#" class="undo-change"><i class="icon-undo"></i> Undo Change</a>&nbsp;&nbsp;
+                        <a href="#" class="reset-changes"><i class="icon-refresh"></i> Reset Changes</a>
+                      </span>
+                    </p>')
     @score_selection_container = $('.score-selection-container')
     @grade_selection_container = $('.grade-selection-container')
     @flag_submission_checkbox = $('.flag-checkbox')
@@ -314,7 +323,13 @@ class @StaffGrading
     @submission = response.submission
     @rubric = response.rubric
     @submission_id = response.submission_id
-    @feedback_area.val('')
+    if response.track_changes?
+      @feedback_area.before(@ice_legend)
+      @feedback_area.replaceWith('<div name="feedback" class="feedback-area track-changes" contenteditable="true"></div>')
+      @feedback_area.html(@make_paragraphs(response.submission))
+    else
+      @feedback_area.replaceWith('<textarea name="feedback" placeholder="Feedback for student" class="feedback-area" cols="70" ></textarea>')
+      @feedback_area.val('')
     @grade = null
     @max_score = response.max_score
     @ml_error_info=response.ml_error_info

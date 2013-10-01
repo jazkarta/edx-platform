@@ -124,9 +124,13 @@ class StaffGradingService(GradingService):
         Raises:
             GradingServiceError: something went wrong with the connection.
         """
+        module = self._find_corresponding_module_for_location(location)
+        
         response = self.get(self.get_next_url,
-                            params={'location': location,
-                                    'grader_id': grader_id})
+                params={'location': location,
+                        'grader_id': grader_id,
+                        'track_changes': getattr(module, 'track_changes', False),
+                        })
         return json.dumps(self._render_rubric(response))
 
 

@@ -70,11 +70,12 @@ def staff_grading(request, course_id):
     ajax_url = _reverse_with_slash('staff_grading', course_id)
 
     return render_to_response('instructor/staff_grading.html', {
-        'course': course,
-        'course_id': course_id,
-        'ajax_url': ajax_url,
-        # Checked above
-        'staff_access': True, })
+      'course': course,
+      'course_id': course_id,
+      'ajax_url': ajax_url,
+      # Checked above
+      'staff_access': True,
+    })
 
 
 def find_peer_grading_module(course):
