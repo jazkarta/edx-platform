@@ -1236,7 +1236,7 @@ def confirm_email_change(request, key):
             'new_email': pec.new_email
         }
 
-        if len(User.objects.filter(email=pec.new_email)) != 0:
+        if User.objects.filter(email=pec.new_email).count() != 0:
             transaction.rollback()
             return render_to_response("email_exists.html", {})
 
@@ -1269,8 +1269,9 @@ def confirm_email_change(request, key):
             log.warning('Unable to send confirmation email to new address', exc_info=True)
             return render_to_response("email_change_failed.html", {'email': pec.new_email})
 
+        response = render_to_response("email_change_successful.html", address_context)
         transaction.commit()
-        return render_to_response("email_change_successful.html", address_context)
+        return response
     except Exception:
         # If we get an unexpected exception, be sure to rollback the transaction
         transaction.rollback()
