@@ -163,7 +163,8 @@ function goto( mode)
         <p>${_("Note: these features are known to timeout for larger courses. "
             "We have temporarily disabled them for courses with "
             "more than {max_enrollment} students. We are working on "
-            "fixing this issue.").format(
+            "fixing this issue. Thank you for your patience as we continue "
+            "working to improve your user experience!").format(
             max_enrollment=settings.MITX_FEATURES['MAX_ENROLLMENT_INSTR_BUTTONS']
           )}</p>
       </div>
@@ -392,13 +393,13 @@ function goto( mode)
     <h2>${_("Enrollment Data")}</h2>
     % if disable_buttons:
     <div class="msg msg-warning">
-
       <div class="copy">
         <p>${_("Note: these features are known to timeout for larger courses. "
-          "We have temporarily disabled them for courses with "
-          "more than {max_enrollment} students. We are working on "
-          "fixing this issue.").format(
-          max_enrollment=settings.MITX_FEATURES['MAX_ENROLLMENT_INSTR_BUTTONS']
+               "We have temporarily disabled them for courses with "
+               "more than {max_enrollment} students. We are working on "
+               "fixing this issue. Thank you for your patience as we continue "
+               "working to improve your user experience!").format(
+                  max_enrollment=settings.MITX_FEATURES['MAX_ENROLLMENT_INSTR_BUTTONS']
         )}</p>
       </div>
     </div>
