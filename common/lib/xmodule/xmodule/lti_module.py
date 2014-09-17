@@ -741,7 +741,8 @@ oauth_consumer_key="", oauth_signature="frVp4JuvT1mVXlxktiAUjQ7%2F1cw%3D"'}
 
         Raises Exception if can't parse.
         """
-        lti_spec_namespace = "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0"
+        #lti_spec_namespace = "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0"
+        lti_spec_namespace = "http://www.imsglobal.org/lis/oms1p0/pox"
         namespaces = {'def': lti_spec_namespace}
 
         data = body.strip().encode('utf-8')
