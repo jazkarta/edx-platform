@@ -148,16 +148,13 @@ def _has_access_course_desc(user, action, course):
         course is not invitation only.
         """
 
-        # if using registration method to restrict (say shibboleth)
-        if settings.FEATURES.get('RESTRICT_ENROLL_BY_REG_METHOD') and course.enrollment_domain:
-            if user is not None and user.is_authenticated() and \
-                ExternalAuthMap.objects.filter(user=user, external_domain=course.enrollment_domain):
-                debug("Allow: external_auth of " + course.enrollment_domain)
-                reg_method_ok = True
+        if course.enrollment_domain:
+            if user is not None and hasattr(user, 'email'):
+                reg_method_ok = user and user.email.endswith('@' + course.enrollment_domain)
             else:
                 reg_method_ok = False
         else:
-            reg_method_ok = True  # if not using this access check, it's always OK.
+            reg_method_ok = True
 
         now = datetime.now(UTC())
         start = course.enrollment_start or datetime.min.replace(tzinfo=pytz.UTC)
