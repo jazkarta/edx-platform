@@ -1517,18 +1517,6 @@ def create_account(request, post_override=None):  # pylint: disable-msg=too-many
             # Seems like the core part of the request was successful.
             return JsonResponse(js, status=500)
 
-    # Immediately after a user creates an account, we log them in. They are only
-    # logged in until they close the browser. They can't log in again until they click
-    # the activation link from the email.
-    login_user = authenticate(username=post_vars['username'], password=post_vars['password'])
-    login(request, login_user)
-    request.session.set_expiry(0)
-
-    # TODO: there is no error checking here to see that the user actually logged in successfully,
-    # and is not yet an active user.
-    if login_user is not None:
-        AUDIT_LOG.info(u"Login success on new account creation - {0}".format(login_user.username))
-
     if DoExternalAuth:
         eamap.user = login_user
         eamap.dtsignup = datetime.datetime.now(UTC)
@@ -1543,7 +1531,7 @@ def create_account(request, post_override=None):  # pylint: disable-msg=too-many
             AUDIT_LOG.info(u"Login activated on extauth account - {0} ({1})".format(login_user.username, login_user.email))
 
     dog_stats_api.increment("common.student.account_created")
-    redirect_url = try_change_enrollment(request)
+    redirect_url = None
 
     # Resume the third-party-auth pipeline if necessary.
     if microsite.get_value('ENABLE_THIRD_PARTY_AUTH', settings.FEATURES.get('ENABLE_THIRD_PARTY_AUTH')) and pipeline.running(request):
