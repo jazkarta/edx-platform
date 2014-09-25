@@ -127,12 +127,11 @@ def enable_microsites():
             # remove from our configuration as it is not valid
             del microsite_config_dict[ms_name]
 
-    # if we have any valid microsites defined, let's wire in the Mako and STATIC_FILES search paths
-    if microsite_config_dict:
-        settings.TEMPLATE_DIRS.append(microsites_root)
-        edxmako.paths.add_lookup('main', microsites_root)
+    # wire in the Mako and STATIC_FILES search paths
+    settings.TEMPLATE_DIRS.append(microsites_root)
+    edxmako.paths.add_lookup('main', microsites_root)
 
-        settings.STATICFILES_DIRS.insert(0, microsites_root)
+    settings.STATICFILES_DIRS.insert(0, microsites_root)
 
 
 def enable_third_party_auth():

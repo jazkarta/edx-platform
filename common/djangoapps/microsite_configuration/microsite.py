@@ -6,6 +6,7 @@ A microsite enables the following features:
 2) Present a landing page with a listing of courses that are specific to the 'brand'
 3) Ability to swap out some branding elements in the website
 """
+import json
 import threading
 import os.path
 
@@ -15,10 +16,24 @@ CURRENT_REQUEST_CONFIGURATION = threading.local()
 CURRENT_REQUEST_CONFIGURATION.data = {}
 
 
+MICROSITE_JSON = '/edx/var/edxapp/microsites.json'
+last_read = None
+
+
 def has_configuration_set():
     """
     Returns whether there is any Microsite configuration settings
     """
+    global last_read
+    try:
+        modified = os.path.getmtime(MICROSITE_JSON)
+    except OSError:
+        return
+    else:
+        if not last_read or modified > last_read:
+            settings.MICROSITE_CONFIGURATION = json.loads(open(MICROSITE_JSON).read())
+            last_read = modified
+
     return getattr(settings, "MICROSITE_CONFIGURATION", False)
 
 
