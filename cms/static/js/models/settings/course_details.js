@@ -75,7 +75,11 @@ var CourseDetails = Backbone.Model.extend({
 
         var video = this.get('intro_video'),
             slashes = video.indexOf('//');
-        if (slashes == -1) {
+        if (video[0] == '<') {
+            // Embed
+            return 'data:text/html;charset=utf-8,' + encodeURIComponent(video);
+        }
+        else if (slashes == -1) {
             // Youtube
             return "//www.youtube.com/embed/" + video;
         }

@@ -182,7 +182,8 @@ class CourseDetails(object):
         match_patterns = (
             r'(?<=embed/)[a-zA-Z0-9_-]+',
             r'<?=\d+:[a-zA-Z0-9_-]+',
-            r'(?<=source src=")[^"]+'
+            r'(?<=source src=")[^"]+',
+            r'(^<.+)',
         )
         for pattern in match_patterns:
             match = re.search(pattern, raw_video)
@@ -195,8 +196,17 @@ class CourseDetails(object):
     def recompose_video_tag(video_key):
         # TODO should this use a mako template? Of course, my hope is that this is a short-term workaround for the db not storing
         # the right thing
-        result = None
-        if '//' in video_key:
+        if not video_key:
+            return None
+
+        video_key = video_key.strip()
+        if video_key.startswith('<'):
+            # It's an embed
+            result = video_key
+            result = re.sub(r'width="\d+"', 'width="560"', result)
+            result = re.sub(r'height="\d+"', 'height="315"', result)
+
+        elif '//' in video_key:
             # It's a url
             video_key = video_key[video_key.find('//'):]  # strip protocol
             result = """
@@ -206,10 +216,12 @@ class CourseDetails(object):
                 Try using a different browser, such as Google Chrome.
             </video>
             """.format(url=video_key, id=id)
-        elif video_key:
+
+        else:
             # It's a Youtube video id
             result = '<iframe width="560" height="315" src="//www.youtube.com/embed/' + \
                 video_key + '?rel=0" frameborder="0" allowfullscreen=""></iframe>'
+
         return result
 
 
