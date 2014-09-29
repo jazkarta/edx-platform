@@ -28,7 +28,7 @@ def has_configuration_set():
     try:
         modified = os.path.getmtime(MICROSITE_JSON)
     except OSError:
-        return
+        return getattr(settings, "MICROSITE_CONFIGURATION", False)
     else:
         if not last_read or modified > last_read:
             settings.MICROSITE_CONFIGURATION = json.loads(open(MICROSITE_JSON).read())
