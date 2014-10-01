@@ -5,6 +5,8 @@ import logging
 
 from django.contrib.auth.models import User
 from django.http import HttpResponse
+from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 
 from capa.xqueue_interface import XQUEUE_METRIC_NAME
@@ -118,3 +120,10 @@ def update_certificate(request):
         cert.save()
         return HttpResponse(json.dumps({'return_code': 0}),
                             mimetype='application/json')
+
+
+@csrf_exempt
+def request_grade(request):
+    result = request_certificate(request)
+    return redirect(reverse('dashboard'))
+

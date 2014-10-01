@@ -21,6 +21,10 @@ from util.date_utils import get_time_display
 from django.conf import settings
 %>
 
+<%!
+    from student.views import cert_info
+%>
+
 <%block name="js_extra">
 <script type="text/javascript" src="${static.url('js/vendor/flot/jquery.flot.js')}"></script>
 <script type="text/javascript" src="${static.url('js/vendor/flot/jquery.flot.stack.js')}"></script>
@@ -62,6 +66,35 @@ from django.conf import settings
             </a>
           </div>
         %endif
+      %endif
+
+      <%
+        nonzero_cutoffs = [cutoff for cutoff in course.grade_cutoffs.values() if cutoff > 0]
+        success_cutoff = min(nonzero_cutoffs) if nonzero_cutoffs else None
+        cert = cert_info(request.user, course)
+      %>
+      %if success_cutoff and grade_summary['percent'] > success_cutoff:
+        <div id="course-success" class="wrapper-msg success urgency-low">
+          <div class="msg">
+            %if cert['status'] != 'ready':
+            <div class="msg-content">
+            <h3 class="title">Course Passed</h3>
+            <div class="copy"><p>You have enough credits to pass this course. Click on the Complete Course button to receive your final grade.</p></div>
+            </div>
+            <div class="pull-right">
+              <form method="post" action="${reverse('request_grade')}">
+                <input type="hidden" name="course_id" value="${course.id}" />
+                <input type="submit" value="Complete Course" />
+              </form>
+            </div>
+            %else:
+            <div class="msg-content">
+            <h3 class="title">Course Completed</h3>
+            <div class="copy"><p>You already have completed this course.</p></div>
+            </div>
+            %endif
+          </div>
+        </div>
       %endif
 
       %if not course.disable_progress_graph:

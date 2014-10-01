@@ -236,10 +236,11 @@ class XQueueCertInterface(object):
                     }
                     if template_file:
                         contents['template_pdf'] = template_file
-                    new_status = status.generating
+                    new_status = status.downloadable
                     cert.status = new_status
                     cert.save()
-                    self._send_to_xqueue(contents, key)
+                    # do not use certificate pipeline for now
+                    # self._send_to_xqueue(contents, key)
             else:
                 cert_status = status.notpassing
                 cert.status = cert_status
