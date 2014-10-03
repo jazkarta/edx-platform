@@ -147,7 +147,11 @@ require(["domReady!", "jquery", "js/models/settings/course_details", "js/views/s
                 <label for="allowed-groups">${_("Allowed Groups")}</label>
                 <select multiple name="allowed-groups" id="allowed-groups">
                   % for group in allowed_groups:
-                  <option value="${group}">${group}</option>
+                  <option
+                  %if unicode(group) in context_course.allowed_groups:
+                  selected
+                  % endif
+                  value="${group}">${group}</option>
                   % endfor
                 </select>
                 <span class="tip tip-stacked">${_("Groups that are allowed to enroll in your course")}</span>
@@ -159,7 +163,11 @@ require(["domReady!", "jquery", "js/models/settings/course_details", "js/views/s
                 <select multiple name="required-courses" id="required-courses">
                   % for course in required_courses:
                   % if course.location.course_key != context_course.location.course_key:
-                  <option value="${course.location.course_key}">${course.display_name_with_default}</option>
+                  <option
+                  %if unicode(course.location.course_key) in context_course.required_courses:
+                  selected
+                  % endif
+                  value="${course.location.course_key}">${course.display_name_with_default}</option>
                   % endif
                   % endfor
                 </select>
