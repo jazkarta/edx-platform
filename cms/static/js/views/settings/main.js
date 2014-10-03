@@ -10,6 +10,7 @@ var DetailsView = ValidatingView.extend({
         // Leaving change in as fallback for older browsers
         "change input" : "updateModel",
         "change textarea" : "updateModel",
+        "change select" : "updateModel",
         'click .remove-course-introduction-video' : "removeVideo",
         'focus #course-overview' : "codeMirrorize",
         'mouseover #timezone' : "updateTime",
@@ -77,7 +78,9 @@ var DetailsView = ValidatingView.extend({
         'short_description' : 'course-short-description',
         'intro_video' : 'course-introduction-video',
         'effort' : "course-effort",
-        'course_image_asset_path': 'course-image-url'
+        'course_image_asset_path': 'course-image-url',
+        'allowed_groups': "allowed-groups",
+        'required_courses': "required-courses"
     },
 
     updateTime : function(e) {
@@ -170,6 +173,12 @@ var DetailsView = ValidatingView.extend({
                     this.$el.find('.remove-course-introduction-video').hide();
                 }
             }, this), 1000);
+            break;
+        case 'allowed-groups':
+            this.setField(event);
+            break;
+        case 'required-courses':
+            this.setField(event);
             break;
         default: // Everything else is handled by datepickers and CodeMirror.
             break;

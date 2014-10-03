@@ -551,6 +551,16 @@ class CourseFields(object):
                               default=False,
                               scope=Scope.settings)
 
+    allowed_groups = List(display_name=_("Allowed Groups"),
+                              help="List of groups that can enroll in the course (empty means any group).",
+                              default=[],
+                              scope=Scope.settings)
+
+    required_courses = List(display_name=_("Required Courses"),
+                              help="List of courses that are required to enroll in the current course (empty means no requirements).",
+                              default=[],
+                              scope=Scope.settings)
+
 class CourseDescriptor(CourseFields, SequenceDescriptor):
     module_class = SequenceModule
 

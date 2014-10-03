@@ -135,6 +135,42 @@ require(["domReady!", "jquery", "js/models/settings/course_details", "js/views/s
 
         <hr class="divide" />
 
+        <section class="group-settings">
+          <header>
+            <h2 class="title-2">${_('Course Groups and Requirements')}</h2>
+            <span class="tip">${_('Groups allowed and required courses to enroll in your course')}</span>
+          </header>
+
+          <ol class="list-input">
+            <li class="field-group field-group-allowed-groups" id="allowed-groups">
+              <div class="field" id="field-allowed-groups">
+                <label for="allowed-groups">${_("Allowed Groups")}</label>
+                <select multiple name="allowed-groups" id="allowed-groups">
+                  % for group in allowed_groups:
+                  <option value="${group}">${group}</option>
+                  % endfor
+                </select>
+                <span class="tip tip-stacked">${_("Groups that are allowed to enroll in your course")}</span>
+              </div>
+             </li>
+            <li class="field-group field-group-required-courses" id="required-courses">
+              <div class="field" id="field-required-courses">
+                <label for="required-courses">${_("Required Courses")}</label>
+                <select multiple name="required-courses" id="required-courses">
+                  % for course in required_courses:
+                  % if course.location.course_key != context_course.location.course_key:
+                  <option value="${course.location.course_key}">${course.display_name_with_default}</option>
+                  % endif
+                  % endfor
+                </select>
+                <span class="tip tip-stacked">${_("Courses that a student needs to have completed before allowed to enroll in your course")}</span>
+              </div>
+             </li>
+           </ol>
+        </section>
+
+        <hr class="divide" />
+
         <section class="group-settings schedule">
           <header>
             <h2 class="title-2">${_('Course Schedule')}</h2>

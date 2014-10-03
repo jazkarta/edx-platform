@@ -28,6 +28,8 @@ class CourseDetails(object):
         self.effort = None  # int hours/week
         self.course_image_name = ""
         self.course_image_asset_path = ""  # URL of the course image
+        self.allowed_groups = []
+        self.required_courses = []
 
     @classmethod
     def fetch(cls, course_key):
@@ -43,6 +45,8 @@ class CourseDetails(object):
         course_details.enrollment_end = descriptor.enrollment_end
         course_details.course_image_name = descriptor.course_image
         course_details.course_image_asset_path = course_image_url(descriptor)
+        course_details.allowed_groups = descriptor.allowed_groups
+        course_details.required_courses = descriptor.required_courses
 
         temploc = course_key.make_usage_key('about', 'syllabus')
         try:
@@ -152,6 +156,14 @@ class CourseDetails(object):
 
         if 'course_image_name' in jsondict and jsondict['course_image_name'] != descriptor.course_image:
             descriptor.course_image = jsondict['course_image_name']
+            dirty = True
+
+        if 'allowed_groups' in jsondict and jsondict['allowed_groups'] != descriptor.allowed_groups:
+            descriptor.allowed_groups = jsondict['allowed_groups']
+            dirty = True
+
+        if 'required_courses' in jsondict and jsondict['required_courses'] != descriptor.required_courses:
+            descriptor.required_courses = jsondict['required_courses']
             dirty = True
 
         if dirty:

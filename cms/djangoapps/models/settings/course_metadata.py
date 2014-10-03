@@ -27,7 +27,9 @@ class CourseMetadata(object):
                      'user_partitions',
                      'name',  # from xblock
                      'tags',  # from xblock
-                     'visible_to_staff_only'
+                     'visible_to_staff_only',
+                     'allowed_groups',
+                     'required_courses'
     ]
 
     @classmethod

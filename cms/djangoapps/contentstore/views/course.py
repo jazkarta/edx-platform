@@ -7,6 +7,7 @@ import string  # pylint: disable=W0402
 import logging
 from django.utils.translation import ugettext as _
 import django.utils
+from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
@@ -732,6 +733,9 @@ def settings_handler(request, course_key_string):
         )
 
         short_description_editable = settings.FEATURES.get('EDITABLE_SHORT_DESCRIPTION', True)
+        allowed_groups = DjangoGroup.objects.all()
+
+        required_courses = modulestore().get_courses()
 
         return render_to_response('settings.html', {
             'context_course': course_module,
@@ -741,7 +745,9 @@ def settings_handler(request, course_key_string):
             'details_url': reverse_course_url('settings_handler', course_key),
             'about_page_editable': about_page_editable,
             'short_description_editable': short_description_editable,
-            'upload_asset_url': upload_asset_url
+            'upload_asset_url': upload_asset_url,
+            'allowed_groups': allowed_groups,
+            'required_courses': required_courses
         })
     elif 'application/json' in request.META.get('HTTP_ACCEPT', ''):
         if request.method == 'GET':
