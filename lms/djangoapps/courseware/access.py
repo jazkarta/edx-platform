@@ -156,6 +156,14 @@ def _has_access_course_desc(user, action, course):
         else:
             reg_method_ok = True
 
+        # if the course has allowed_groups set, only allow enrollment to users with
+        # right groups
+        allowed_group = True
+        if course.allowed_groups and user is not None and user.is_authenticated():
+            user_groups = user.groups.values_list('name', flat=True)
+            if not set(user_groups).intersection(set(course.allowed_groups)):
+                allowed_group = False
+
         now = datetime.now(UTC())
         start = course.enrollment_start or datetime.min.replace(tzinfo=pytz.UTC)
         end = course.enrollment_end or datetime.max.replace(tzinfo=pytz.UTC)
@@ -176,7 +184,7 @@ def _has_access_course_desc(user, action, course):
             debug("Deny: invitation only")
             return False
 
-        if reg_method_ok and start < now < end:
+        if reg_method_ok and allowed_group and start < now < end:
             debug("Allow: in enrollment period")
             return True
 
