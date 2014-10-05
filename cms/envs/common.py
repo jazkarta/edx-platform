@@ -571,6 +571,9 @@ INSTALLED_APPS = (
 
     # Additional problem types
     'edx_jsme',    # Molecular Structure
+
+    # ISC apps
+    'edx_microsite_manager',
 )
 
 
