@@ -14,6 +14,8 @@ from xmodule.x_module import XModule
 
 from xblock.core import XBlock
 
+from microsite_configuration import microsite
+
 from student.models import CourseEnrollmentAllowed
 from external_auth.models import ExternalAuthMap
 from courseware.masquerade import is_masquerading_as_student
@@ -164,6 +166,29 @@ def _has_access_course_desc(user, action, course):
             if not set(user_groups).intersection(set(course.allowed_groups)):
                 allowed_group = False
 
+        # if the course has required_courses set, only allow enrollment if required
+        # courses already completed.
+        reqs_covered = True
+        if course.required_courses and user is not None and user.is_authenticated():
+            # trying this import from top level totally crashes the lms
+            # for a pilot, we can figure out this stuff later
+            from student.views import cert_info, get_course_enrollment_pairs
+            course_org_filter = microsite.get_value('course_org_filter')
+            org_filter_out_set = microsite.get_all_orgs()
+            if course_org_filter:
+                org_filter_out_set.remove(course_org_filter)
+            course_enrollment_pairs = list(get_course_enrollment_pairs(user,
+                course_org_filter, org_filter_out_set))
+
+            reqs = 0
+            for _course, _enrollment in course_enrollment_pairs:
+                if _course.id.to_deprecated_string() in course.required_courses:
+                    info = cert_info(user, _course)
+                    if info['status'] == 'ready':
+                        reqs = reqs + 1
+            if reqs < len(course.required_courses):
+                reqs_covered = False
+
         now = datetime.now(UTC())
         start = course.enrollment_start or datetime.min.replace(tzinfo=pytz.UTC)
         end = course.enrollment_end or datetime.max.replace(tzinfo=pytz.UTC)
@@ -184,7 +209,7 @@ def _has_access_course_desc(user, action, course):
             debug("Deny: invitation only")
             return False
 
-        if reg_method_ok and allowed_group and start < now < end:
+        if reg_method_ok and allowed_group and reqs_covered and start < now < end:
             debug("Allow: in enrollment period")
             return True
 
