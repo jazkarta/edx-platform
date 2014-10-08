@@ -233,7 +233,9 @@ def _has_access_course_desc(user, action, course):
                 return True
             return _has_staff_access_to_descriptor(user, course, course.id)
 
-        return can_enroll() or can_load()
+        # I think we only want to show courses student can actually enroll in.
+        # --rossi
+        return can_enroll() # or can_load()
 
     checkers = {
         'load': can_load,

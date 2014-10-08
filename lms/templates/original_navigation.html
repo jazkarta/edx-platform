@@ -60,7 +60,7 @@ site_status_msg = get_site_status_msg(course_id)
         % endif
       </%block>
     </ol>
-    <ol class="user">
+    <ol class="user" style="margin-left: 1em;">
       <li class="primary">
         <a href="${reverse('dashboard')}" class="user-link">
           <span class="avatar"></span>
@@ -79,6 +79,23 @@ site_status_msg = get_site_status_msg(course_id)
         </ul>
       </li>
     </ol>
+    % if display_masquerade_pulldown:
+      <ol class="user">
+        <li class="primary">
+          <a href="#" class="user-link">Viewing as ${viewing_as}</a>
+        </li>
+        <li class="primary">
+          <a href="#" class="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="sr">${_("View as dropdown...")}</span> &#9662;
+          </a>
+          <ul class="dropdown-menu" aria-label="View as Options" role="menu">
+            % for group in groups:
+            <li><a href="${request.path + '?view_as=' + group.name}">${group.name.title()}</a></li>
+            %endfor
+          </ul>
+        </li>
+      </ol>
+    %endif
       % if display_shopping_cart: # see shoppingcart.context_processor.user_has_cart_context_processor
         <ol class="user">
           <li class="primary">

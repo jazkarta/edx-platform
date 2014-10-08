@@ -14,7 +14,7 @@ from django.conf import settings
 from django.core.context_processors import csrf
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import User, AnonymousUser, Group
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET
 from django.http import Http404, HttpResponse
@@ -102,16 +102,54 @@ def verify_course_id(view_func):
     return _decorated
 
 
+class MasqueradeGroups(object):
+
+    def __init__(self, group):
+        self.group = group.name
+
+    def values_list(self, _, flat=True):
+        return [self.group]
+
+
+class MasqueradeUser(AnonymousUser):
+
+    def __init__(self, real_user, group):
+        super(MasqueradeUser, self).__init__()
+        self._groups = MasqueradeGroups(group)
+        self.email = real_user.email
+
+    def is_authenticated(self):
+        return True
+
+
 @ensure_csrf_cookie
 @cache_if_anonymous
 def courses(request):
     """
     Render "find courses" page.  The course selection work is done in courseware.courses.
     """
-    courses = get_courses(request.user, request.META.get('HTTP_HOST'))
-    courses = sort_by_announcement(courses)
+    context = {}
+    as_user = request.user
+    if as_user.is_staff:
+        groups = Group.objects.all()
+        if groups:
+            context['display_masquerade_pulldown'] = True
+            context['viewing_as'] = _('Myself')
+            context['groups'] = Group.objects.all()
 
-    return render_to_response("courseware/courses.html", {'courses': courses})
+            as_group = request.GET.get('view_as')
+            if as_group:
+                for group in groups:
+                    if group.name == as_group:
+                        as_user = MasqueradeUser(as_user, group)
+                        context['viewing_as'] = group.name.title()
+                        break
+
+    context['courses'] = sort_by_announcement(
+        get_courses(as_user, request.META.get('HTTP_HOST'))
+    )
+
+    return render_to_response("courseware/courses.html", context)
 
 
 def render_accordion(request, course, chapter, section, field_data_cache):
