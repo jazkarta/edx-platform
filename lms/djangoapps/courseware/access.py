@@ -184,7 +184,7 @@ def _has_access_course_desc(user, action, course):
             for _course, _enrollment in course_enrollment_pairs:
                 if _course.id.to_deprecated_string() in course.required_courses:
                     info = cert_info(user, _course)
-                    if info['status'] == 'ready':
+                    if 'status' in info and info['status'] == 'ready':
                         reqs = reqs + 1
             if reqs < len(course.required_courses):
                 reqs_covered = False
