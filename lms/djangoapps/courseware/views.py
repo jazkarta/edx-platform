@@ -117,9 +117,14 @@ class MasqueradeUser(AnonymousUser):
         super(MasqueradeUser, self).__init__()
         self._groups = MasqueradeGroups(group)
         self.email = real_user.email
+        self.pk = real_user.id
 
     def is_authenticated(self):
         return True
+
+    # for now, we do this to avoid error because MasqueradeUser is not a real user
+    def prepare(self):
+        return self.pk
 
 
 @ensure_csrf_cookie
