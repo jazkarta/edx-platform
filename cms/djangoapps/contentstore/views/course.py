@@ -747,7 +747,7 @@ def settings_handler(request, course_key_string):
             'short_description_editable': short_description_editable,
             'upload_asset_url': upload_asset_url,
             'allowed_groups': allowed_groups,
-            'required_courses': required_courses
+            'required_courses': required_courses or []
         })
     elif 'application/json' in request.META.get('HTTP_ACCEPT', ''):
         if request.method == 'GET':
