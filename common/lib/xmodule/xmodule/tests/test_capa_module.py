@@ -429,13 +429,6 @@ class CapaModuleTest(unittest.TestCase):
                                     due=self.yesterday_str)
         self.assertTrue(module.closed())
 
-    def test_due_date_extension(self):
-
-        module = CapaFactory.create(
-            max_attempts="1", attempts="0", due=self.yesterday_str,
-            extended_due=self.tomorrow_str)
-        self.assertFalse(module.closed())
-
     def test_parse_get_params(self):
 
         # Valid GET param dict
@@ -1682,40 +1675,40 @@ class TestProblemCheckTracking(unittest.TestCase):
         self.maxDiff = None
 
     def test_choice_answer_text(self):
-        factory = self.capa_factory_for_problem_xml("""\
-            <problem display_name="Multiple Choice Questions">
-              <p>What color is the open ocean on a sunny day?</p>
-              <optionresponse>
-                <optioninput options="('yellow','blue','green')" correct="blue" label="What color is the open ocean on a sunny day?"/>
-              </optionresponse>
-              <p>Which piece of furniture is built for sitting?</p>
-              <multiplechoiceresponse>
-                <choicegroup type="MultipleChoice">
-                  <choice correct="false">
-                    <text>a table</text>
-                  </choice>
-                  <choice correct="false">
-                    <text>a desk</text>
-                  </choice>
-                  <choice correct="true">
-                    <text>a chair</text>
-                  </choice>
-                  <choice correct="false">
-                    <text>a bookshelf</text>
-                  </choice>
-                </choicegroup>
-              </multiplechoiceresponse>
-              <p>Which of the following are musical instruments?</p>
-              <choiceresponse>
-                <checkboxgroup direction="vertical" label="Which of the following are musical instruments?">
-                  <choice correct="true">a piano</choice>
-                  <choice correct="false">a tree</choice>
-                  <choice correct="true">a guitar</choice>
-                  <choice correct="false">a window</choice>
-                </checkboxgroup>
-              </choiceresponse>
-            </problem>
-            """)
+        factory = self.capa_factory_for_problem_xml(
+            '<problem display_name="Multiple Choice Questions">'
+              '<p>What color is the open ocean on a sunny day?</p>'
+              '<optionresponse>'
+                '<optioninput options="(\'yellow\',\'blue\',\'green\')" correct="blue" label="What color is the open ocean on a sunny day?"/>'
+              '</optionresponse>'
+              '<p>Which piece of furniture is built for sitting?</p>'
+              '<multiplechoiceresponse>'
+                '<choicegroup type="MultipleChoice">'
+                  '<choice correct="false">'
+                    '<text>a table</text>'
+                  '</choice>'
+                  '<choice correct="false">'
+                    '<text>a desk</text>'
+                  '</choice>'
+                  '<choice correct="true">'
+                    '<text>a chair</text>'
+                  '</choice>'
+                  '<choice correct="false">'
+                    '<text>a bookshelf</text>'
+                  '</choice>'
+                '</choicegroup>'
+              '</multiplechoiceresponse>'
+              '<p>Which of the following are musical instruments?</p>'
+              '<choiceresponse>'
+                '<checkboxgroup direction="vertical" label="Which of the following are musical instruments?">'
+                  '<choice correct="true">a piano</choice>'
+                  '<choice correct="false">a tree</choice>'
+                  '<choice correct="true">a guitar</choice>'
+                  '<choice correct="false">a window</choice>'
+                '</checkboxgroup>'
+              '</choiceresponse>'
+            '</problem>'
+        )
         module = factory.create()
 
         answer_input_dict = {

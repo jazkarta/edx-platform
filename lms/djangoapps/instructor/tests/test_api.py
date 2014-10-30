@@ -36,9 +36,10 @@ from courseware.tests.factories import StaffFactory, InstructorFactory, BetaTest
 from student.roles import CourseBetaTesterRole
 from microsite_configuration import microsite
 from instructor.tests.utils import FakeContentTask, FakeEmail, FakeEmailInfo
+from xmodule.fields import Date
 
 from student.models import CourseEnrollment, CourseEnrollmentAllowed
-from courseware.models import StudentModule
+from courseware.models import StudentModule, StudentFieldOverride
 
 # modules which are mocked in test cases.
 import instructor_task.api
@@ -56,8 +57,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from student.models import NonExistentCourseError
 
 from .test_tools import msk_from_problem_urlname
-from ..views.tools import get_extended_due
 
+DATE_FIELD = Date()
 EXPECTED_CSV_HEADER = '"code","course_id","company_name","created_by","redeemed_by","invoice_id","purchaser","customer_reference_number","internal_reference"'
 EXPECTED_COUPON_CSV_HEADER = '"course_id","percentage_discount","code_redeemed_count","description"'
 
@@ -2779,6 +2780,18 @@ class TestInstructorAPIHelpers(TestCase):
     def test_msk_from_problem_urlname_error(self):
         args = ('notagoodcourse', 'L2Node1')
         msk_from_problem_urlname(*args)
+
+
+def get_extended_due(course, unit, user):
+     try:
+         override = StudentFieldOverride.objects.get(
+             course_id=course.id,
+             student=user,
+             location=unit.location,
+             field='due')
+         return DATE_FIELD.from_json(json.loads(override.value))
+     except StudentFieldOverride.DoesNotExist:
+         return None
 
 
 @override_settings(MODULESTORE=TEST_DATA_MONGO_MODULESTORE)

@@ -505,16 +505,16 @@ class VideoExportTestCase(VideoDescriptorTestBase):
         self.descriptor.transcripts = {'ua': 'ukrainian_translation.srt', 'ge': 'german_translation.srt'}
 
         xml = self.descriptor.definition_to_xml(None)  # We don't use the `resource_fs` parameter
-        expected = etree.fromstring('''\
-         <video url_name="SampleProblem" start_time="0:00:01" youtube="0.75:izygArpw-Qo,1.00:p2Q6BrNhdh8,1.25:1EeWXzPdhSA,1.50:rABDYkeK0x8" show_captions="false" end_time="0:01:00" download_video="true" download_track="true">
-           <source src="http://www.example.com/source.mp4"/>
-           <source src="http://www.example.com/source.ogg"/>
-           <track src="http://www.example.com/track"/>
-           <handout src="http://www.example.com/handout"/>
-           <transcript language="ge" src="german_translation.srt" />
-           <transcript language="ua" src="ukrainian_translation.srt" />
-         </video>
-        ''')
+        expected = etree.fromstring(
+         '<video url_name="SampleProblem" start_time="0:00:01" youtube="0.75:izygArpw-Qo,1.00:p2Q6BrNhdh8,1.25:1EeWXzPdhSA,1.50:rABDYkeK0x8" show_captions="false" end_time="0:01:00" download_video="true" download_track="true">'
+           '<source src="http://www.example.com/source.mp4"/>'
+           '<source src="http://www.example.com/source.ogg"/>'
+           '<track src="http://www.example.com/track"/>'
+           '<handout src="http://www.example.com/handout"/>'
+           '<transcript language="ge" src="german_translation.srt" />'
+           '<transcript language="ua" src="ukrainian_translation.srt" />'
+         '</video>'
+        )
         self.assertXmlEqual(expected, xml)
 
     def test_export_to_xml_empty_end_time(self):
@@ -534,14 +534,13 @@ class VideoExportTestCase(VideoDescriptorTestBase):
         self.descriptor.download_video = True
 
         xml = self.descriptor.definition_to_xml(None)  # We don't use the `resource_fs` parameter
-        expected = etree.fromstring('''\
-         <video url_name="SampleProblem" start_time="0:00:05" youtube="0.75:izygArpw-Qo,1.00:p2Q6BrNhdh8,1.25:1EeWXzPdhSA,1.50:rABDYkeK0x8" show_captions="false" download_video="true" download_track="true">
-           <source src="http://www.example.com/source.mp4"/>
-           <source src="http://www.example.com/source.ogg"/>
-           <track src="http://www.example.com/track"/>
-         </video>
-        ''')
-
+        expected = etree.fromstring(
+         '<video url_name="SampleProblem" start_time="0:00:05" youtube="0.75:izygArpw-Qo,1.00:p2Q6BrNhdh8,1.25:1EeWXzPdhSA,1.50:rABDYkeK0x8" show_captions="false" download_video="true" download_track="true">'
+           '<source src="http://www.example.com/source.mp4"/>'
+           '<source src="http://www.example.com/source.ogg"/>'
+           '<track src="http://www.example.com/track"/>'
+         '</video>'
+        )
         self.assertXmlEqual(expected, xml)
 
     def test_export_to_xml_empty_parameters(self):
