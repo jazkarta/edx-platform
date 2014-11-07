@@ -164,7 +164,7 @@ require(["domReady!", "jquery", "js/models/settings/course_details", "js/views/s
                   % for course in required_courses:
                   % if course.location.course_key != context_course.location.course_key:
                   <option
-                  %if unicode(course.location.course_key) in context_course.required_courses:
+                  %if context_course.required_courses and unicode(course.location.course_key) in context_course.required_courses:
                   selected
                   % endif
                   value="${course.location.course_key}">${course.display_name_with_default}</option>
