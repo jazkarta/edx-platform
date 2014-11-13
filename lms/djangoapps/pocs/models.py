@@ -29,7 +29,7 @@ class PocFieldOverride(models.Model):
     location = LocationKeyField(max_length=255, db_index=True)
 
     class Meta:
-        unique_together = (('poc', 'location', 'student'),)
+        unique_together = (('poc', 'location'),)
 
     field = models.CharField(max_length=255)
     value = models.TextField(default='null')
