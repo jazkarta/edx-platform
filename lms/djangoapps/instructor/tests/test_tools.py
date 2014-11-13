@@ -10,9 +10,8 @@ import unittest
 from django.utils.timezone import utc
 from django.test.utils import override_settings
 
-from courseware.models import StudentModule
-from courseware.field_overrides import OverrideFieldData
-from student.tests.factories import UserFactory
+from courseware.field_overrides import OverrideFieldData  # pylint: disable=import-error
+from student.tests.factories import UserFactory  # pylint: disable=import-error
 from xmodule.fields import Date
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
@@ -222,6 +221,7 @@ class TestSetDueDateExtension(ModuleStoreTestCase):
                 user, block._field_data)  # pylint: disable=protected-access
 
     def tearDown(self):
+        super(TestSetDueDateExtension, self).tearDown()
         OverrideFieldData.provider_classes = None
 
     def _clear_field_data_cache(self):
@@ -241,6 +241,12 @@ class TestSetDueDateExtension(ModuleStoreTestCase):
         self.assertEqual(self.week1.due, extended)
         self.assertEqual(self.homework.due, extended)
         self.assertEqual(self.assignment.due, extended)
+
+    def test_set_due_date_extension_num_queries(self):
+        extended = datetime.datetime(2013, 12, 25, 0, 0, tzinfo=utc)
+        with self.assertNumQueries(4):
+            tools.set_due_date_extension(self.course, self.week1, self.user, extended)
+            self._clear_field_data_cache()
 
     def test_set_due_date_extension_invalid_date(self):
         extended = datetime.datetime(2009, 1, 1, 0, 0, tzinfo=utc)
@@ -274,7 +280,6 @@ class TestDataDumps(ModuleStoreTestCase):
         course = CourseFactory.create()
         week1 = ItemFactory.create(due=due, parent=course)
         week2 = ItemFactory.create(due=due, parent=course)
-        week3 = ItemFactory.create(due=due, parent=course)
 
         homework = ItemFactory.create(
             parent=week1,

@@ -15,7 +15,7 @@ from ..field_overrides import (
 )
 
 
-TESTUSER = object()
+TESTUSER = "testuser"
 
 
 @override_settings(FIELD_OVERRIDE_PROVIDERS=(
@@ -26,9 +26,11 @@ class OverrideFieldDataTests(TestCase):
     """
 
     def setUp(self):
+        super(OverrideFieldDataTests, self).setUp()
         OverrideFieldData.provider_classes = None
 
     def tearDown(self):
+        super(OverrideFieldDataTests, self).tearDown()
         OverrideFieldData.provider_classes = None
 
     def make_one(self):

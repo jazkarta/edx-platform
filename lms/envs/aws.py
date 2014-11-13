@@ -576,3 +576,17 @@ ONLOAD_BEACON_SAMPLE_RATE = ENV_TOKENS.get('ONLOAD_BEACON_SAMPLE_RATE', ONLOAD_B
 ECOMMERCE_API_URL = ENV_TOKENS.get('ECOMMERCE_API_URL', ECOMMERCE_API_URL)
 ECOMMERCE_API_SIGNING_KEY = AUTH_TOKENS.get('ECOMMERCE_API_SIGNING_KEY', ECOMMERCE_API_SIGNING_KEY)
 ECOMMERCE_API_TIMEOUT = ENV_TOKENS.get('ECOMMERCE_API_TIMEOUT', ECOMMERCE_API_TIMEOUT)
+
+##### Custom Courses for EdX #####
+if FEATURES.get('CUSTOM_COURSES_EDX'):
+    INSTALLED_APPS += ('ccx',)
+    MIDDLEWARE_CLASSES += ('ccx.overrides.CcxMiddleware',)
+    FIELD_OVERRIDE_PROVIDERS += (
+        'ccx.overrides.CustomCoursesForEdxOverrideProvider',
+    )
+
+##### Individual Due Date Extensions #####
+if FEATURES.get('INDIVIDUAL_DUE_DATES'):
+    FIELD_OVERRIDE_PROVIDERS += (
+        'courseware.student_field_overrides.IndividualStudentOverrideProvider',
+    )

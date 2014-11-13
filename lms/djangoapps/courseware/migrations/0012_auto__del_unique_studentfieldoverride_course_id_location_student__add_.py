@@ -10,20 +10,13 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'StudentFieldOverride'
-        db.create_table('courseware_studentfieldoverride', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('course_id', self.gf('xmodule_django.models.CourseKeyField')(max_length=255, db_index=True)),
-            ('location', self.gf('xmodule_django.models.LocationKeyField')(max_length=255, db_index=True)),
-            ('student', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('field', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('value', self.gf('django.db.models.fields.TextField')(default='null')),
-        ))
-        db.send_create_signal('courseware', ['StudentFieldOverride'])
+
+        # Adding unique constraint on 'StudentFieldOverride', fields ['course_id', 'field', 'location', 'student']
+        db.create_unique('courseware_studentfieldoverride', ['course_id', 'field', 'location', 'student_id'])
 
     def backwards(self, orm):
-        # Deleting model 'StudentFieldOverride'
-        db.delete_table('courseware_studentfieldoverride')
+        # Removing unique constraint on 'StudentFieldOverride', fields ['course_id', 'field', 'location', 'student']
+        db.delete_unique('courseware_studentfieldoverride', ['course_id', 'field', 'location', 'student_id'])
 
     models = {
         'auth.group': {
@@ -80,7 +73,7 @@ class Migration(SchemaMigration):
             'seconds': ('django.db.models.fields.IntegerField', [], {'default': '0'})
         },
         'courseware.studentfieldoverride': {
-            'Meta': {'unique_together': "(('course_id', 'location', 'student'),)", 'object_name': 'StudentFieldOverride'},
+            'Meta': {'unique_together': "(('course_id', 'field', 'location', 'student'),)", 'object_name': 'StudentFieldOverride'},
             'course_id': ('xmodule_django.models.CourseKeyField', [], {'max_length': '255', 'db_index': 'True'}),
             'field': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),

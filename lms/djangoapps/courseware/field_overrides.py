@@ -20,7 +20,6 @@ from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from django.conf import settings
 from xblock.field_data import FieldData
-from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.inheritance import InheritanceMixin
 
 
@@ -199,7 +198,7 @@ def _lineage(block):
     Returns an iterator over all ancestors of the given block, starting with
     its immediate parent and ending at the root of the block tree.
     """
-    location = modulestore().get_parent_location(block.location)
-    while location:
-        yield modulestore().get_item(location)
-        location = modulestore().get_parent_location(location)
+    parent = block.get_parent()
+    while parent:
+        yield parent
+        parent = parent.get_parent()

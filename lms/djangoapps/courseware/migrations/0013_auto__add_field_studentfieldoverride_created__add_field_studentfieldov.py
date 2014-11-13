@@ -10,20 +10,28 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'StudentFieldOverride'
-        db.create_table('courseware_studentfieldoverride', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('course_id', self.gf('xmodule_django.models.CourseKeyField')(max_length=255, db_index=True)),
-            ('location', self.gf('xmodule_django.models.LocationKeyField')(max_length=255, db_index=True)),
-            ('student', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('field', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('value', self.gf('django.db.models.fields.TextField')(default='null')),
-        ))
-        db.send_create_signal('courseware', ['StudentFieldOverride'])
+        # Adding field 'StudentFieldOverride.created'
+        db.add_column('courseware_studentfieldoverride', 'created',
+                      self.gf('model_utils.fields.AutoCreatedField')(default=datetime.datetime.now),
+                      keep_default=False)
+
+        # Adding field 'StudentFieldOverride.modified'
+        db.add_column('courseware_studentfieldoverride', 'modified',
+                      self.gf('model_utils.fields.AutoLastModifiedField')(default=datetime.datetime.now),
+                      keep_default=False)
+
+        # Adding index on 'StudentFieldOverride', fields ['course_id', 'location', 'student']
+        db.create_index('courseware_studentfieldoverride', ['course_id', 'location', 'student_id'])
 
     def backwards(self, orm):
-        # Deleting model 'StudentFieldOverride'
-        db.delete_table('courseware_studentfieldoverride')
+        # Deleting field 'StudentFieldOverride.created'
+        db.delete_column('courseware_studentfieldoverride', 'created')
+
+        # Deleting field 'StudentFieldOverride.modified'
+        db.delete_column('courseware_studentfieldoverride', 'modified')
+
+        # Removing index on 'StudentFieldOverride', fields ['course_id', 'location', 'student']
+        db.delete_index('courseware_studentfieldoverride', ['course_id', 'location', 'student_id'])
 
     models = {
         'auth.group': {
@@ -80,11 +88,13 @@ class Migration(SchemaMigration):
             'seconds': ('django.db.models.fields.IntegerField', [], {'default': '0'})
         },
         'courseware.studentfieldoverride': {
-            'Meta': {'unique_together': "(('course_id', 'location', 'student'),)", 'object_name': 'StudentFieldOverride'},
+            'Meta': {'unique_together': "(('course_id', 'field', 'location', 'student'),)", 'object_name': 'StudentFieldOverride'},
             'course_id': ('xmodule_django.models.CourseKeyField', [], {'max_length': '255', 'db_index': 'True'}),
+            'created': ('model_utils.fields.AutoCreatedField', [], {'default': 'datetime.datetime.now'}),
             'field': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'location': ('xmodule_django.models.LocationKeyField', [], {'max_length': '255', 'db_index': 'True'}),
+            'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
             'student': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
             'value': ('django.db.models.fields.TextField', [], {'default': "'null'"})
         },
@@ -127,7 +137,7 @@ class Migration(SchemaMigration):
             'field_name': ('django.db.models.fields.CharField', [], {'max_length': '64', 'db_index': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'db_index': 'True', 'blank': 'True'}),
-            'module_type': ('django.db.models.fields.CharField', [], {'max_length': '64', 'db_index': 'True'}),
+            'module_type': ('xmodule_django.models.BlockTypeKeyField', [], {'max_length': '64', 'db_index': 'True'}),
             'student': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
             'value': ('django.db.models.fields.TextField', [], {'default': "'null'"})
         },
