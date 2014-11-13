@@ -37,8 +37,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1a\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2014-11-10 09:42-0500\n"
-"PO-Revision-Date: 2014-11-10 14:42:09.270615\n"
+"POT-Creation-Date: 2014-11-13 18:28+0000\n"
+"PO-Revision-Date: 2014-11-13 18:28:52.426930\n"
 "Last-Translator: \n"
 "Language-Team: openedx-translation <openedx-translation@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -1292,19 +1292,6 @@ msgstr ""
 #: common/lib/xmodule/xmodule/combined_open_ended_module.py
 msgid "Date that this problem is due by"
 msgstr "Däté thät thïs prößlém ïs düé ßý Ⱡ'σяєм ι#"
-
-#: common/lib/xmodule/xmodule/capa_base.py
-#: common/lib/xmodule/xmodule/combined_open_ended_module.py
-#: common/lib/xmodule/xmodule/peer_grading_module.py
-msgid ""
-"Date that this problem is due by for a particular student. This can be set "
-"by an instructor, and will override the global due date if it is set to a "
-"date that is later than the global due date."
-msgstr ""
-"Däté thät thïs prößlém ïs düé ßý för ä pärtïçülär stüdént. Thïs çän ßé sét "
-"ßý än ïnstrüçtör, änd wïll övérrïdé thé glößäl düé däté ïf ït ïs sét tö ä "
-"däté thät ïs lätér thän thé glößäl düé däté. Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт αмєт, "
-"¢σηѕє¢тєтυя α∂ιριѕι¢ιηg єłιт, ѕє#"
 
 #: common/lib/xmodule/xmodule/capa_base.py
 #: common/lib/xmodule/xmodule/combined_open_ended_module.py
@@ -4748,6 +4735,10 @@ msgstr ""
 #: lms/djangoapps/instructor/views/instructor_dashboard.py
 msgid "CourseMode price updated successfully"
 msgstr "ÇöürséMödé prïçé üpdätéd süççéssfüllý Ⱡ'σяєм ιρѕ#"
+
+#: lms/djangoapps/instructor/views/instructor_dashboard.py
+msgid "Enrollment data is now available in {dashboard_link}."
+msgstr "Énröllmént dätä ïs nöw äväïläßlé ïn {dashboard_link}. Ⱡ'σяєм ιρѕυ#"
 
 #: lms/djangoapps/instructor/views/instructor_dashboard.py
 msgid "Membership"
@@ -8674,8 +8665,17 @@ msgstr "Réjéçt Ⱡ'σяєм ιρѕ#"
 
 #: lms/templates/navigation-edx.html lms/templates/navigation-edx.html
 #: lms/templates/navigation.html
+msgid "How it Works"
+msgstr "Höw ït Wörks Ⱡ#"
+
+#: lms/templates/navigation-edx.html lms/templates/navigation-edx.html
+#: lms/templates/navigation.html
 msgid "Find Courses"
 msgstr "Fïnd Çöürsés Ⱡ#"
+
+#: lms/templates/navigation-edx.html lms/templates/navigation-edx.html
+msgid "Schools & Partners"
+msgstr "Sçhööls & Pärtnérs Ⱡ'σ#"
 
 #: lms/templates/navigation-edx.html lms/templates/navigation.html
 msgid "Dashboard for:"
@@ -8692,14 +8692,6 @@ msgstr "Lög Öüt #"
 #: lms/templates/navigation-edx.html lms/templates/navigation.html
 msgid "Shopping Cart"
 msgstr "Shöppïng Çärt Ⱡ'#"
-
-#: lms/templates/navigation-edx.html lms/templates/navigation.html
-msgid "How it Works"
-msgstr "Höw ït Wörks Ⱡ#"
-
-#: lms/templates/navigation-edx.html
-msgid "Schools & Partners"
-msgstr "Sçhööls & Pärtnérs Ⱡ'σ#"
 
 #: lms/templates/navigation-edx.html lms/templates/navigation-edx.html
 #: lms/templates/register.html
@@ -10092,16 +10084,12 @@ msgstr "Grädé Döwnlöäds Ⱡ'#"
 #: lms/templates/courseware/instructor_dashboard.html
 msgid ""
 "Note: some of these buttons are known to time out for larger courses. We "
-"have temporarily disabled those features for courses with more than "
-"{max_enrollment} students. We are urgently working on fixing this issue. "
-"Thank you for your patience as we continue working to improve the platform!"
+"have disabled those features for courses with more than {max_enrollment} "
+"students."
 msgstr ""
 "Nöté: sömé öf thésé ßüttöns äré knöwn tö tïmé öüt för lärgér çöürsés. Wé "
-"hävé témpörärïlý dïsäßléd thösé féätürés för çöürsés wïth möré thän "
-"{max_enrollment} stüdénts. Wé äré ürgéntlý wörkïng ön fïxïng thïs ïssüé. "
-"Thänk ýöü för ýöür pätïénçé äs wé çöntïnüé wörkïng tö ïmprövé thé plätförm! "
-"Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт αмєт, ¢σηѕє¢тєтυя α∂ιριѕι¢ιηg єłιт, ѕє∂ ∂σ єιυѕмσ∂ "
-"тємρσя ιη¢ι∂ι∂υ#"
+"hävé dïsäßléd thösé féätürés för çöürsés wïth möré thän {max_enrollment} "
+"stüdénts. Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт αмєт, ¢σηѕє¢тєтυя α∂ι#"
 
 #: lms/templates/courseware/instructor_dashboard.html
 msgid "Export grades to remote gradebook"
@@ -10266,27 +10254,6 @@ msgid "Section:"
 msgstr "Séçtïön: #"
 
 #: lms/templates/courseware/instructor_dashboard.html
-#: lms/templates/instructor/instructor_dashboard_2/membership.html
-msgid "Batch Enrollment"
-msgstr "Bätçh Énröllmént Ⱡ'σ#"
-
-#: lms/templates/courseware/instructor_dashboard.html
-msgid ""
-"Enroll or un-enroll one or many students: enter emails, separated by new "
-"lines or commas;"
-msgstr ""
-"Énröll ör ün-énröll öné ör mäný stüdénts: éntér émäïls, sépärätéd ßý néw "
-"lïnés ör çömmäs; Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт αмєт#"
-
-#: lms/templates/courseware/instructor_dashboard.html
-msgid "Notify students by email"
-msgstr "Nötïfý stüdénts ßý émäïl Ⱡ'σяє#"
-
-#: lms/templates/courseware/instructor_dashboard.html
-msgid "Auto-enroll students when they activate"
-msgstr "Àütö-énröll stüdénts whén théý äçtïväté Ⱡ'σяєм ιρѕ#"
-
-#: lms/templates/courseware/instructor_dashboard.html
 msgid "Problem urlname:"
 msgstr "Prößlém ürlnämé: Ⱡ'σ#"
 
@@ -10387,18 +10354,6 @@ msgstr "À qüéüéd émäïl ÇÀNNÖT ßé çänçélléd. Ⱡ'σяєм ιρ#
 #: lms/templates/courseware/instructor_dashboard.html
 msgid "No Analytics are available at this time."
 msgstr "Nö Ànälýtïçs äré äväïläßlé ät thïs tïmé. Ⱡ'σяєм ιρѕυ#"
-
-#: lms/templates/courseware/instructor_dashboard.html
-msgid ""
-"Students enrolled (historical count, includes those who have since "
-"unenrolled):"
-msgstr ""
-"Stüdénts énrölléd (hïstörïçäl çöünt, ïnçlüdés thösé whö hävé sïnçé "
-"ünénrölléd): Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт α#"
-
-#: lms/templates/courseware/instructor_dashboard.html
-msgid "Students active in the last week:"
-msgstr "Stüdénts äçtïvé ïn thé läst wéék: Ⱡ'σяєм ι#"
 
 #: lms/templates/courseware/instructor_dashboard.html
 msgid "Student activity day by day"
@@ -12923,6 +12878,10 @@ msgstr "Géndér Dïstrïßütïön Ⱡ'σя#"
 #: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
 msgid "Revert to Legacy Dashboard"
 msgstr "Révért tö Légäçý Däshßöärd Ⱡ'σяєм#"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Batch Enrollment"
+msgstr "Bätçh Énröllmént Ⱡ'σ#"
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
