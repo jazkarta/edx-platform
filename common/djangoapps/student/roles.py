@@ -219,6 +219,14 @@ class CourseBetaTesterRole(CourseRole):
         super(CourseBetaTesterRole, self).__init__(self.ROLE, *args, **kwargs)
 
 
+class CoursePocCoachRole(CourseRole):
+    """A POC Coach"""
+    ROLE = 'poc_coach'
+
+    def __init__(self, *args, **kwargs):
+        super(CoursePocCoachRole, self).__init__(self.ROLE, *args, **kwargs)
+
+
 class OrgStaffRole(OrgRole):
     """An organization staff member"""
     def __init__(self, *args, **kwargs):
