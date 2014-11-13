@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 from xmodule_django.models import CourseKeyField, LocationKeyField
@@ -9,9 +10,18 @@ class PersonalOnlineCourse(models.Model):
     """
     course_id = CourseKeyField(max_length=255, db_index=True)
     display_name = models.CharField(max_length=255)
+    coach = models.ForeignKey(User, db_index=True)
 
 
-class PersonalOnlineCourseFieldOverride(models.Model):
+class PocMembership(models.Model):
+    """
+    Which students are in a POC?
+    """
+    poc = models.ForeignKey(PersonalOnlineCourse, db_index=True)
+    student = models.ForeignKey(User, db_index=True)
+
+
+class PocFieldOverride(models.Model):
     """
     Field overrides for personal online courses.
     """

@@ -5,7 +5,7 @@ by the individual due dates feature.
 import json
 
 from .field_overrides import FieldOverrideProvider
-from .models import StudentFieldOverride
+from .models import PocFieldOverride
 
 
 class PersonalOnlineCoursesOverrideProvider(FieldOverrideProvider):
@@ -17,13 +17,13 @@ class PersonalOnlineCoursesOverrideProvider(FieldOverrideProvider):
     def get(self, block, name, default):
         poc = get_current_poc()
         if poc:
-            return get_override_for_poc(self.user, block, name, default)
+            return get_override_for_poc(poc, block, name, default)
         return default
 
 
 def get_current_poc():
     """
-    TODO
+    TODO Needs to look in user's session
     """
     return None
 
@@ -35,13 +35,13 @@ def get_override_for_poc(poc, block, name, default=None):
     overridden for the given poc, returns `default`.
     """
     try:
-        override = StudentFieldOverride.objects.get(
+        override = PocFieldOverride.objects.get(
             poc=poc,
             location=block.location,
             field=name)
         field = block.fields[name]
         return field.from_json(json.loads(override.value))
-    except StudentFieldOverride.DoesNotExist:
+    except PocFieldOverride.DoesNotExist:
         pass
     return default
 
@@ -52,7 +52,7 @@ def override_field_for_poc(poc, block, name, value):
     and the name of the field on that block to override.  `value` is the
     value to set for the given field.
     """
-    override, _ = StudentFieldOverride.objects.get_or_create(
+    override, _ = PocFieldOverride.objects.get_or_create(
         poc=poc,
         location=block.location,
         field=name)
@@ -69,9 +69,9 @@ def clear_override_for_poc(poc, block, name):
     performed.
     """
     try:
-        StudentFieldOverride.objects.get(
+        PocFieldOverride.objects.get(
             poc=poc,
             location=block.location,
             field=name).delete()
-    except StudentFieldOverride.DoesNotExist:
+    except PocFieldOverride.DoesNotExist:
         pass
