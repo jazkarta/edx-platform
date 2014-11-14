@@ -711,7 +711,7 @@ class InstructorTab(StaffTab):
         )
 
 
-class PocCoachTab(StaffTab):
+class PocCoachTab(CourseTab):
     """
     A tab for the personal online course coaches.
     """
@@ -834,7 +834,7 @@ class CourseTabList(List):
         if instructor_tab.can_display(course, settings, is_user_authenticated, is_user_staff, is_user_enrolled):
             yield instructor_tab
         poc_coach_tab = PocCoachTab()
-        if instructor_tab.can_display(course, settings, is_user_authenticated, is_user_staff, is_user_enrolled):
+        if poc_coach_tab.can_display(course, settings, is_user_authenticated, is_user_staff, is_user_enrolled):
             yield poc_coach_tab
 
     @staticmethod
