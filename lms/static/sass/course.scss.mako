@@ -73,5 +73,8 @@
 @import "course/instructor/email";
 @import "xmodule/descriptors/css/module-styles.scss";
 
+// poc_coach
+@import "course/poc_coach/dashboard";
+
 // discussion
 @import "course/discussion/form-wmd-toolbar";

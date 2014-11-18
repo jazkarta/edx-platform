@@ -1,2 +1,99 @@
-<p>Hi there!</p>
-<p>Schedule goes here.</p>
+<script id="poc-schedule-template" type="text/x-handlerbars-template">
+  <table class="poc-schedule">
+    <thead>
+      <tr>
+        <th>Unit</th>
+        <th>Start Date</th>
+        <th>Due Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each schedule}}
+        <tr class="chapter collapsed" data-location="{{location}}" data-depth="1">
+          <td class="unit">
+            <a href="#"><i class="icon-caret-right icon toggle-collapse"></i></a> 
+            {{display_name}}
+          </td>
+          <td class="date">{{start}}</td>
+          <td class="date">{{due}}</td>
+          <td><a href="#">remove</a></td>
+        </tr>
+        {{#each children}}
+          <tr class="sequential collapsed" data-location="{{location}}" data-depth="2">
+            <td class="unit">
+              <a href="#"><i class="icon-caret-right icon toggle-collapse"></i></a> 
+              {{display_name}}
+            </td>
+            <td class="date">{{start}}</td>
+            <td class="date">{{due}}</td>
+            <td><a href="#">remove</a></td>
+          </tr>
+          {{#each children}}
+            <tr class="vertical" data-location="{{location}}" data-depth="3">
+              <td class="unit">&nbsp;{{display_name}}</td>
+              <td class="date">{{start}}</td>
+              <td class="date">{{due}}</td>
+              <td><a href="#">remove</a></td>
+          {{/each}}
+        {{/each}}
+      {{/each}}
+    </tbody>
+  </table>
+</script>
+
+<div id="poc-schedule"></div>
+
+<script>
+var poc_schedule = (function () {
+  var context = {
+    schedule: ${schedule},
+  };
+  var template = Handlebars.compile($('#poc-schedule-template').html());
+  
+  function render() {
+    $('#poc-schedule').html(template(context));
+
+    // Start collapsed
+    $('table.poc-schedule .sequential,.vertical').hide();
+
+    // Click handlers for collapsible tree
+    $('table.poc-schedule .toggle-collapse').on('click', toggle_collapse);
+  }
+
+  function get_children(row) {
+    var depth = $(row).data('depth');
+    return $(row).nextUntil(
+      $(row).siblings().filter(function() {
+        return $(this).data('depth') <= depth;
+      })
+    );
+  }
+
+  function toggle_collapse(event) {
+    event.preventDefault();
+    var row = $(this).closest('tr');
+    var children = get_children(row);
+
+    if (row.is('.expanded')) {
+      $(this).removeClass('icon-caret-down').addClass('icon-caret-right');
+      row.removeClass('expanded').addClass('collapsed');
+      children.hide(); 
+    }
+
+    else {
+      $(this).removeClass('icon-caret-right').addClass('icon-caret-down');
+      row.removeClass('collapsed').addClass('expanded');
+      children.filter('.collapsed').each(function() {
+        children = children.not(get_children(this));
+      });
+      children.show(); 
+    }
+  }
+
+  return {
+    render: render
+  }
+})();
+
+$(poc_schedule.render);
+</script>
