@@ -1,4 +1,5 @@
 import functools
+import json
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseForbidden
@@ -41,9 +42,11 @@ def dashboard(request, course):
     Display the POC Coach Dashboard.
     """
     poc = get_poc_for_coach(course, request.user)
+    schedule = get_poc_schedule(course, poc)
     context = {
         'course': course,
         'poc': poc,
+        'schedule': json.dumps(schedule, indent=4),
     }
     if not poc:
         context['create_poc_url'] = reverse(
@@ -80,3 +83,19 @@ def get_poc_for_coach(course, coach):
     except PersonalOnlineCourse.DoesNotExist:
         return None
 
+
+def get_poc_schedule(course, poc):
+    """
+    """
+    def visit(node, depth=1):
+        return [
+            {'location': str(child.location),
+             'display_name': child.display_name,
+             'category': child.category,
+             'start': str(child.start)[:-9] if child.start else None,
+             'due': str(child.due)[:-9] if child.due else None,
+             'children': visit(child, depth+1) if depth < 3 else ()}
+            for child in node.get_children()
+        ]
+
+    return visit(course)

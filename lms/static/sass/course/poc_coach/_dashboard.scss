@@ -1,0 +1,15 @@
+
+table.poc-schedule {
+    thead {
+        border-bottom: 2px solid black;
+    }
+    th, td {
+        padding: 10px;
+    }
+    .sequential .unit {
+        padding-left: 25px;
+    }
+    .vertical .unit {
+        padding-left: 40px;
+    }
+}
