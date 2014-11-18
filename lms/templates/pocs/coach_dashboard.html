@@ -32,12 +32,40 @@
       %endif
       
       %if poc:
-      <section>
-        <p>Hello World!</p>
-        <p>Your poc is ${poc.display_name}</p>
+      <ul class="instructor-nav">
+        <li class="nav-item">
+          <a href="#" data-section="section-enrollment">${_("Enrollment")}</a>
+        </li>
+        <li class="nav-item">
+          <a href="#" data-section="section-schedule">${_("Schedule")}</a>
+        </li>
+      </ul>
+      <section id="section-enrollment" class="idash-section">
+        <%include file="enrollment.html" args="" />
+      </section>
+      <section id="section-schedule" class="idash-section">
+        <%include file="schedule.html" args="" />
       </section>
       %endif
 
     </section>
   </div>
 </section>
+
+<script>
+  function setup_tabs() {
+    $(".instructor-nav a").on("click", function(event) {
+        event.preventDefault();
+        $(".instructor-nav a").removeClass("active-section");
+        var section_sel = "#" + $(this).attr("data-section");
+        $("section.idash-section").hide();
+        $(section_sel).show();
+        $(this).addClass("active-section");
+    });
+    $(".instructor-nav a").first().click();
+  }
+
+  $(setup_tabs);
+
+
+</script>
