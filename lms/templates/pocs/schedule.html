@@ -7,11 +7,13 @@
         <th>${_('Unit')}</th>
         <th>${_('Start Date')}</th>
         <th>${_('Due Date')}</th>
-        <th></th>
+        <th><a href="#" id="remove-all">
+          <i class="icon-remove-sign icon"></i> ${_('remove all')}
+        </a></th>
       </tr>
     </thead>
     <tbody>
-      {{#each schedule}}
+      {{#each chapters}}
         <tr class="chapter collapsed" data-location="{{location}}" data-depth="1">
           <td class="unit">
             <a href="#"><i class="icon-caret-right icon toggle-collapse"></i></a> 
@@ -19,7 +21,7 @@
           </td>
           <td class="date">{{start}}</td>
           <td class="date">{{due}}</td>
-          <td><a href="#">${_('remove')}</a></td>
+          <td><a href="#"><i class="icon-remove-sign icon"></i> ${_('remove')}</a></td>
         </tr>
         {{#each children}}
           <tr class="sequential collapsed" data-location="{{location}}" data-depth="2">
@@ -29,14 +31,14 @@
             </td>
             <td class="date">{{start}}</td>
             <td class="date">{{due}}</td>
-            <td><a href="#">${_('remove')}</a></td>
+            <td><a href="#"><i class="icon-remove-sign icon"></i> ${_('remove')}</a></td>
           </tr>
           {{#each children}}
             <tr class="vertical" data-location="{{location}}" data-depth="3">
               <td class="unit">&nbsp;{{display_name}}</td>
               <td class="date">{{start}}</td>
               <td class="date">{{due}}</td>
-              <td><a href="#">${_('remove')}</a></td>
+              <td><a href="#"><i class="icon-remove-sign icon"></i> ${_('remove')}</a></td>
           {{/each}}
         {{/each}}
       {{/each}}
@@ -52,24 +54,18 @@
   <form role="form" id="add-unit" name="add-unit">
     <div class="field">
       <b>${_('Chapter')}</b><br/>
-      <select name="chapter">
-        <option>${_('Select a chapter')}</option>
-      </select>
+      <select name="chapter"></select>
     </div>
     <div class="field">
       <b>${_('Sequential')}</b><br/>
-      <select name="sequential" disabled>
-        <option></option>
-      </select>
+      <select name="sequential"></select>
     </div>
     <div class="field">
       <b>${_('Vertical')}</b><br/>
-      <select name="vertical" disabled>
-        <option></option>
-      </select>
+      <select name="vertical"></select>
     </div>
     <div class="field">
-      <b>${_('Start Date')}<b><br/>
+      <b>${_('Start Date')}</b><br/>
       <input type="date" name="start_date"/>
       <input type="time" name="start_time"/>
     </div>
@@ -80,28 +76,103 @@
     </div>
     <div class="field">
       <br/>
-      <button type="submit" disabled>${_('Add Unit')}</button>
+      <button disabled>${_('Add Unit')}</button>
+    </div>
+    <div class="field">
+      <br/>
+      <button id="add-all">${_('Add All Units')}</button>
     </div>
   </form>
+  <div id="all-units-added">
+    ${_("All units have been added.")}
+  </div>
 </div>
 
 <script>
 var poc_schedule = (function () {
-  var context = {
-    schedule: ${schedule},
-  };
+  var schedule = ${schedule};
   var template = Handlebars.compile($('#poc-schedule-template').html());
-  
-  function render() {
-    $('#poc-schedule').html(template(context));
+  var chapter_select = $('form#add-unit select[name="chapter"]'),
+      sequential_select = $('form#add-unit select[name="sequential"]'),
+      vertical_select = $('form#add-unit select[name="vertical"]');
+
+  var self = {
+    schedule: schedule
+  };
+
+  /**
+   * Render the course tree view.
+   */
+  self.render = function() {
+    var hidden = pruned(this.schedule, function(node) {
+      return node.hidden});
+    var showing = pruned(this.schedule, function(node) {
+      return !node.hidden});
+
+    // Render template
+    $('#poc-schedule').html(template({chapters: showing}));
 
     // Start collapsed
     $('table.poc-schedule .sequential,.vertical').hide();
 
     // Click handlers for collapsible tree
     $('table.poc-schedule .toggle-collapse').on('click', toggle_collapse);
+
+    // Click handler for remove all
+    $('table.poc-schedule a#remove-all').on('click', function(event) {
+      event.preventDefault();
+      schedule_apply(self.schedule, function(node) { node.hidden = true; });
+      self.render();
+    });
+
+    if (hidden.length) {
+      // Populate chapters select, depopulate others
+      $(chapter_select).html('')
+        .append('<option>${_("Select a chapter")}...</option>')
+        .append(schedule_options(hidden));
+      $(sequential_select).html('').prop('disabled', true);
+      $(vertical_select).html('').prop('disabled', true);
+      $('form#add-unit').show();
+      $('#all-units-added').hide();
+    }
+    else {
+      $('form#add-unit').hide();
+      $('#all-units-added').show();
+    }
   }
 
+  /**
+   * Returns a sequence of <option> DOM elements for a particular sequence
+   * of schedule nodes.
+   */
+  function schedule_options(nodes) {
+    return nodes.map(function(node) {
+      return $('<option>')
+        .attr('value', node.location)
+        .text(node.display_name)[0];
+    });
+  }
+
+  /**
+   * Return a schedule pruned by the given filter function.
+   */
+  function pruned(tree, filter) {
+    return tree.filter(filter)
+      .map(function(node) {
+        var copy = {};
+        $.extend(copy, node);
+        if (node.children) copy.children = pruned(node.children, filter);
+        return copy;
+      })
+      .filter(function(node) {
+        return node.children === undefined || node.children.length;
+      });
+  }
+
+  /**
+   * Get table rows that represent the children of given row in the schedule
+   * tree.
+   */
   function get_children(row) {
     var depth = $(row).data('depth');
     return $(row).nextUntil(
@@ -111,6 +182,9 @@ var poc_schedule = (function () {
     );
   }
 
+  /**
+   * Handle click event for expanding/collapsing nodes in the schedule tree.
+   */
   function toggle_collapse(event) {
     event.preventDefault();
     var row = $(this).closest('tr');
@@ -132,10 +206,29 @@ var poc_schedule = (function () {
     }
   }
 
-  return {
-    render: render
+  /**
+   * Add all nodes.
+   */
+  $('#add-all').on('click', function(event) {
+      event.preventDefault();
+      schedule_apply(self.schedule, function(node) {
+        node.hidden = false;
+      });
+      self.render();
+  });
+
+  /**
+   * Visit every tree node, applying function.
+   */
+  function schedule_apply(nodes, f) {
+    nodes.map(function(node) {
+      f(node);
+      if (node.children !== undefined) schedule_apply(node.children, f);
+    });
   }
+
+  return self;
 })();
 
-$(poc_schedule.render);
+$(function() { poc_schedule.render(); });
 </script>

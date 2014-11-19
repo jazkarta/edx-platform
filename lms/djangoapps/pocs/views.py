@@ -88,14 +88,21 @@ def get_poc_schedule(course, poc):
     """
     """
     def visit(node, depth=1):
-        return [
-            {'location': str(child.location),
-             'display_name': child.display_name,
-             'category': child.category,
-             'start': str(child.start)[:-9] if child.start else None,
-             'due': str(child.due)[:-9] if child.due else None,
-             'children': visit(child, depth+1) if depth < 3 else ()}
-            for child in node.get_children()
-        ]
+        for child in node.get_children():
+            visited = {
+                'location': str(child.location),
+                'display_name': child.display_name,
+                'category': child.category,
+                'start': str(child.start)[:-9] if child.start else None,
+                'due': str(child.due)[:-9] if child.due else None,
+                'hidden': child.hidden,
+            }
+            if depth < 3:
+                children = tuple(visit(child, depth + 1))
+                if children:
+                    visited['children'] = children
+                    yield visited
+            else:
+                yield visited
 
-    return visit(course)
+    return tuple(visit(course))
