@@ -1,10 +1,13 @@
+<%! from django.utils.translation import ugettext as _ %>
+
 <script id="poc-schedule-template" type="text/x-handlerbars-template">
   <table class="poc-schedule">
     <thead>
       <tr>
-        <th>Unit</th>
-        <th>Start Date</th>
-        <th>Due Date</th>
+        <th>${_('Unit')}</th>
+        <th>${_('Start Date')}</th>
+        <th>${_('Due Date')}</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -16,7 +19,7 @@
           </td>
           <td class="date">{{start}}</td>
           <td class="date">{{due}}</td>
-          <td><a href="#">remove</a></td>
+          <td><a href="#">${_('remove')}</a></td>
         </tr>
         {{#each children}}
           <tr class="sequential collapsed" data-location="{{location}}" data-depth="2">
@@ -26,14 +29,14 @@
             </td>
             <td class="date">{{start}}</td>
             <td class="date">{{due}}</td>
-            <td><a href="#">remove</a></td>
+            <td><a href="#">${_('remove')}</a></td>
           </tr>
           {{#each children}}
             <tr class="vertical" data-location="{{location}}" data-depth="3">
               <td class="unit">&nbsp;{{display_name}}</td>
               <td class="date">{{start}}</td>
               <td class="date">{{due}}</td>
-              <td><a href="#">remove</a></td>
+              <td><a href="#">${_('remove')}</a></td>
           {{/each}}
         {{/each}}
       {{/each}}
@@ -41,7 +44,46 @@
   </table>
 </script>
 
-<div id="poc-schedule"></div>
+<div class="poc-schedule-container">
+  <div id="poc-schedule"></div>
+</div>
+<div class="poc-form-container">
+  <h2>${_('Schedule a Unit')}</h2>
+  <form role="form" id="add-unit" name="add-unit">
+    <div class="field">
+      <b>${_('Chapter')}</b><br/>
+      <select name="chapter">
+        <option>${_('Select a chapter')}</option>
+      </select>
+    </div>
+    <div class="field">
+      <b>${_('Sequential')}</b><br/>
+      <select name="sequential" disabled>
+        <option></option>
+      </select>
+    </div>
+    <div class="field">
+      <b>${_('Vertical')}</b><br/>
+      <select name="vertical" disabled>
+        <option></option>
+      </select>
+    </div>
+    <div class="field">
+      <b>${_('Start Date')}<b><br/>
+      <input type="date" name="start_date"/>
+      <input type="time" name="start_time"/>
+    </div>
+    <div class="field">
+      <b>${_('Due Date')}</b> ${_('(Optional)')}<br/>
+      <input type="date" name="due_date"/>
+      <input type="time" name="due_time"/>
+    </div>
+    <div class="field">
+      <br/>
+      <button type="submit" disabled>${_('Add Unit')}</button>
+    </div>
+  </form>
+</div>
 
 <script>
 var poc_schedule = (function () {
