@@ -53,3 +53,11 @@ class LmsBlockMixin(XBlockMixin):
         default=False,
         scope=Scope.settings,
     )
+    hidden = Boolean(
+        display_name=_("Block is Hidden"),
+        help=_("This field exists to be overridden and provides a mechanism "
+               "for alternate views of a course to include or not a unit of "
+               "a course. This is used by the Personal Online Courses feature."),
+        default=False,
+        scope=Scope.settings,
+    )
