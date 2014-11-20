@@ -92,7 +92,7 @@
       </div>
       <div class="field">
         <br/>
-        <button disabled>${_('Add Unit')}</button>
+        <button id="add-unit-button">${_('Add Unit')}</button>
       </div>
       <div class="field">
         <br/>
@@ -123,13 +123,13 @@ var poc_schedule = (function () {
    * Render the course tree view.
    */
   self.render = function() {
-    var hidden = pruned(this.schedule, function(node) {
-      return node.hidden});
-    var showing = pruned(this.schedule, function(node) {
+    this.hidden = pruned(this.schedule, function(node) {
+      return node.hidden || node.category !== 'vertical'});
+    this.showing = pruned(this.schedule, function(node) {
       return !node.hidden});
 
     // Render template
-    $('#poc-schedule').html(template({chapters: showing}));
+    $('#poc-schedule').html(template({chapters: this.showing}));
 
     // Start collapsed
     $('table.poc-schedule .sequential,.vertical').hide();
@@ -146,20 +146,69 @@ var poc_schedule = (function () {
     });
 
     // Show or hide form
-    if (hidden.length) {
+    if (this.hidden.length) {
       // Populate chapters select, depopulate others
-      $(chapter_select).html('')
-        .append('<option>${_("Select a chapter")}...</option>')
-        .append(schedule_options(hidden));
-      $(sequential_select).html('').prop('disabled', true);
-      $(vertical_select).html('').prop('disabled', true);
+      chapter_select.html('')
+        .append('<option value="none">${_("Select a chapter")}...</option>')
+        .append(schedule_options(this.hidden));
+      sequential_select.html('').prop('disabled', true);
+      vertical_select.html('').prop('disabled', true);
       $('form#add-unit').show();
       $('#all-units-added').hide();
+      $('#add-unit-button').prop('disabled', true);
     }
     else {
       $('form#add-unit').hide();
       $('#all-units-added').show();
     }
+
+    // Add unit handlers
+    chapter_select.on('change', function(event) {
+      var chapter_location = chapter_select.val();
+      vertical_select.html('').prop('disabled', true);
+      if (chapter_location !== 'none') {
+        chapter = find_unit(self.hidden, chapter_location);
+        sequential_select.html('')
+          .append('<option value="all">${_("All sequentials")}</option>')
+          .append(schedule_options(chapter.children));
+        sequential_select.prop('disabled', false);
+        $('#add-unit-button').prop('disabled', false);
+      }
+      else {
+        sequential_select.html('').prop('disabled', true);
+      }
+    });
+
+    sequential_select.on('change', function(event) {
+      var sequential_location = sequential_select.val();
+      if (sequential_location !== 'all') {
+        var chapter = chapter_select.val();
+        sequential = find_unit(self.hidden, chapter, sequential_location);
+        vertical_select.html('')
+          .append('<option value="all">${_("All verticals")}</option>')
+          .append(schedule_options(sequential.children));
+        vertical_select.prop('disabled', false);
+      }
+      else {
+        vertical_select.html('').prop('disabled', true);
+      } 
+    });
+
+    $('#add-unit-button').on('click', function(event) {
+      event.preventDefault();
+      var chapter = chapter_select.val(),
+          sequential = sequential_select.val(),
+          vertical = vertical_select.val(),
+          units = find_lineage(self.schedule,
+            chapter,
+            sequential == 'all' ? null : sequential,
+            vertical == 'all' ? null: vertical)
+      units.map(function(x) { x.hidden = false; });
+      unit = units[units.length - 1]
+      schedule_apply([unit], function(x) { x.hidden = false; });      
+      self.dirty = true;
+      self.render();
+    });
 
     // Show or hide save button
     if (this.dirty) $('#dirty-schedule').show()
@@ -287,6 +336,33 @@ var poc_schedule = (function () {
       f(node);
       if (node.children !== undefined) schedule_apply(node.children, f);
     });
+  }
+
+  /**
+   * Find a unit in the tree.
+   */
+  function find_unit(tree, chapter, sequential, vertical) {
+    var units = find_lineage(tree, chapter, sequential, vertical);
+    return units[units.length -1];
+  }
+
+  function find_lineage(tree, chapter, sequential, vertical) {
+    function find_in(seq, location) {
+      for (var i = 0; i < seq.length; i++)
+        if (seq[i].location === location)
+          return seq[i];
+    }
+
+    var units = [],
+        unit = find_in(tree, chapter);
+    units[units.length] = unit;
+    if (sequential) {
+      units[units.length] = unit = find_in(unit.children, sequential);
+      if (vertical) 
+        units[units.length] = unit = find_in(unit.children, vertical);
+    }
+
+    return units;
   }
 
   return self;
