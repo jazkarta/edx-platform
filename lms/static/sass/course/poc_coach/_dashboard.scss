@@ -3,14 +3,6 @@
     width: 750px;
 }
 
-.poc-form-container {
-    float: left;
-    width: 295px;
-    border: 1px solid #cbcbcb;
-    margin-left: 20px;
-    padding: 15px;
-}
-
 table.poc-schedule {
     width: 100%;
 
@@ -34,14 +26,24 @@ table.poc-schedule {
     }
 }
 
-.poc-form-container {
-    form {
-        line-height: 1.5;
-        select {
-            width: 100%;
-        }
-        .field {
-            margin: 5px 0 5px 0;
-        }
+.poc-schedule-sidebar {
+    float: left;
+    width: 295px;
+    margin-left: 20px;
+}
+
+.poc-sidebar-panel {
+    border: 1px solid #cbcbcb;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+form.poc-form {
+    line-height: 1.5;
+    select {
+        width: 100%;
+    }
+    .field {
+        margin: 5px 0 5px 0;
     }
 }

@@ -62,7 +62,17 @@
         $(section_sel).show();
         $(this).addClass("active-section");
     });
-    $(".instructor-nav a").first().click();
+
+    var url = document.URL,
+        hashbang = url.indexOf('#!');
+    if (hashbang != -1) {
+      var selector = '.instructor-nav a[data-section=section-' + 
+        url.substr(hashbang + 2) + ']';
+      $(selector).click();
+    }
+    else {
+      $(".instructor-nav a").first().click();
+    }
   }
 
   $(setup_tabs);

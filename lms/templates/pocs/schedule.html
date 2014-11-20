@@ -49,47 +49,65 @@
 <div class="poc-schedule-container">
   <div id="poc-schedule"></div>
 </div>
-<div class="poc-form-container">
-  <h2>${_('Schedule a Unit')}</h2>
-  <form role="form" id="add-unit" name="add-unit">
-    <div class="field">
-      <b>${_('Chapter')}</b><br/>
-      <select name="chapter"></select>
+
+<div class="poc-schedule-sidebar">
+  <div class="poc-sidebar-panel" id="dirty-schedule">
+    <h2>${_('Save changes')}</h2>
+    <form role="form">
+      <p>${_("You have unsaved changes.")}</p>
+      <div class="field">
+        <br/>
+        <button id="save-changes">${_("Save changes")}</button>
+      </div>
+    </form>
+  </div>
+  <div class="poc-sidebar-panel" id="ajax-error">
+    <h2>${_('Error')}</h2>
+    <p>${_("There was an error saving changes.")}</p>
+  </div>
+  <div class="poc-sidebar-panel">
+    <h2>${_('Schedule a Unit')}</h2>
+    <form role="form" id="add-unit" name="add-unit" class="poc-form">
+      <div class="field">
+        <b>${_('Chapter')}</b><br/>
+        <select name="chapter"></select>
+      </div>
+      <div class="field">
+        <b>${_('Sequential')}</b><br/>
+        <select name="sequential"></select>
+      </div>
+      <div class="field">
+        <b>${_('Vertical')}</b><br/>
+        <select name="vertical"></select>
+      </div>
+      <div class="field">
+        <b>${_('Start Date')}</b><br/>
+        <input type="date" name="start_date"/>
+        <input type="time" name="start_time"/>
+      </div>
+      <div class="field">
+        <b>${_('Due Date')}</b> ${_('(Optional)')}<br/>
+        <input type="date" name="due_date"/>
+        <input type="time" name="due_time"/>
+      </div>
+      <div class="field">
+        <br/>
+        <button disabled>${_('Add Unit')}</button>
+      </div>
+      <div class="field">
+        <br/>
+        <button id="add-all">${_('Add All Units')}</button>
+      </div>
+    </form>
+    <div id="all-units-added">
+      ${_("All units have been added.")}
     </div>
-    <div class="field">
-      <b>${_('Sequential')}</b><br/>
-      <select name="sequential"></select>
-    </div>
-    <div class="field">
-      <b>${_('Vertical')}</b><br/>
-      <select name="vertical"></select>
-    </div>
-    <div class="field">
-      <b>${_('Start Date')}</b><br/>
-      <input type="date" name="start_date"/>
-      <input type="time" name="start_time"/>
-    </div>
-    <div class="field">
-      <b>${_('Due Date')}</b> ${_('(Optional)')}<br/>
-      <input type="date" name="due_date"/>
-      <input type="time" name="due_time"/>
-    </div>
-    <div class="field">
-      <br/>
-      <button disabled>${_('Add Unit')}</button>
-    </div>
-    <div class="field">
-      <br/>
-      <button id="add-all">${_('Add All Units')}</button>
-    </div>
-  </form>
-  <div id="all-units-added">
-    ${_("All units have been added.")}
   </div>
 </div>
 
 <script>
 var poc_schedule = (function () {
+  var save_url = '${save_url}';
   var schedule = ${schedule};
   var template = Handlebars.compile($('#poc-schedule-template').html());
   var chapter_select = $('form#add-unit select[name="chapter"]'),
@@ -97,7 +115,8 @@ var poc_schedule = (function () {
       vertical_select = $('form#add-unit select[name="vertical"]');
 
   var self = {
-    schedule: schedule
+    schedule: schedule,
+    dirty: false
   };
 
   /**
@@ -122,9 +141,11 @@ var poc_schedule = (function () {
     $('table.poc-schedule a#remove-all').on('click', function(event) {
       event.preventDefault();
       schedule_apply(self.schedule, function(node) { node.hidden = true; });
+      self.dirty = true;
       self.render();
     });
 
+    // Show or hide form
     if (hidden.length) {
       // Populate chapters select, depopulate others
       $(chapter_select).html('')
@@ -139,6 +160,18 @@ var poc_schedule = (function () {
       $('form#add-unit').hide();
       $('#all-units-added').show();
     }
+
+    // Show or hide save button
+    if (this.dirty) $('#dirty-schedule').show()
+    else $('#dirty-schedule').hide();
+
+    // Handle save button
+    $('#dirty-schedule #save-changes').on('click', function(event) {
+        event.preventDefault();
+        self.save();
+    });
+
+    $('#ajax-error').hide();
   }
 
   /**
@@ -207,6 +240,34 @@ var poc_schedule = (function () {
   }
 
   /**
+   * Save changes.
+   */
+  self.save = function() {
+    var button = $('#dirty-schedule #save-changes'),
+        button_text = button.text();
+    button.prop('disabled', true).text('${_("Saving")}...');
+    
+    $.ajax({
+        url: save_url,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(this.schedule),
+        success: function(data, textStatus, jqXHR) {
+          self.schedule = data;
+          self.dirty = false;
+          self.render();
+          button.prop('disabled', false).text(button_text);
+        },
+        error: function(jqXHR, textStatus, error) {
+          console.log(jqXHR.responseText);
+          $('#ajax-error').show();
+          $('#dirty-schedule').hide();
+          $('form#add-unit select,input,button').prop('disabled', true);
+        }
+      });
+  }
+
+  /**
    * Add all nodes.
    */
   $('#add-all').on('click', function(event) {
@@ -214,6 +275,7 @@ var poc_schedule = (function () {
       schedule_apply(self.schedule, function(node) {
         node.hidden = false;
       });
+      self.dirty = true;
       self.render();
   });
 

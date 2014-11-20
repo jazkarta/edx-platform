@@ -2,18 +2,20 @@ import functools
 import json
 
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import cache_control
 from django_future.csrf import ensure_csrf_cookie
 
 from courseware.courses import get_course_by_id
+from courseware.field_overrides import disable_overrides
 from edxmako.shortcuts import render_to_response
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from student.roles import CoursePocCoachRole
 
 from .models import PersonalOnlineCourse
+from .overrides import override_field_for_poc, get_override_for_poc
 
 
 def coach_dashboard(view):
@@ -47,6 +49,7 @@ def dashboard(request, course):
         'course': course,
         'poc': poc,
         'schedule': json.dumps(schedule, indent=4),
+        'save_url': reverse('save_poc', kwargs={'course_id': course.id}),
     }
     if not poc:
         context['create_poc_url'] = reverse(
@@ -71,6 +74,32 @@ def create_poc(request, course):
     return redirect(url)
 
 
+@ensure_csrf_cookie
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+@coach_dashboard
+def save_poc(request, course):
+    """
+    Save changes to POC
+    """
+    poc = get_poc_for_coach(course, request.user)
+
+    def override_fields(parent, data):
+        blocks = {
+            str(child.location): child
+            for child in parent.get_children()}
+        for unit in data:
+            block = blocks[unit['location']]
+            override_field_for_poc(poc, block, 'hidden', unit['hidden'])
+            children = unit.get('children', None)
+            if children:
+                override_fields(block, children)
+
+    override_fields(course, json.loads(request.body))
+    return HttpResponse(
+        json.dumps(get_poc_schedule(course, poc)),
+        content_type='application/json')
+
+
 def get_poc_for_coach(course, coach):
     """
     Looks to see if user is coach of a POC for this course.  Returns the POC or
@@ -89,13 +118,20 @@ def get_poc_schedule(course, poc):
     """
     def visit(node, depth=1):
         for child in node.get_children():
+            start = get_override_for_poc(poc, child, 'start', child.start)
+            if start:
+                start = str(child.start)[:-9]
+            due = get_override_for_poc(poc, child, 'due', child.due)
+            if due:
+                due = str(child.due)[:-9]
+            hidden = get_override_for_poc(poc, child, 'hidden', child.hidden)
             visited = {
                 'location': str(child.location),
                 'display_name': child.display_name,
                 'category': child.category,
-                'start': str(child.start)[:-9] if child.start else None,
-                'due': str(child.due)[:-9] if child.due else None,
-                'hidden': child.hidden,
+                'start': start,
+                'due': due,
+                'hidden': hidden,
             }
             if depth < 3:
                 children = tuple(visit(child, depth + 1))
@@ -105,4 +141,5 @@ def get_poc_schedule(course, poc):
             else:
                 yield visited
 
-    return tuple(visit(course))
+    with disable_overrides():
+        return tuple(visit(course))
