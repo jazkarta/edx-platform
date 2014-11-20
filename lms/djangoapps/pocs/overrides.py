@@ -4,7 +4,8 @@ by the individual due dates feature.
 """
 import json
 
-from .field_overrides import FieldOverrideProvider
+from courseware.field_overrides import FieldOverrideProvider
+
 from .models import PocFieldOverride
 
 
