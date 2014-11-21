@@ -35,13 +35,13 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('pocs', ['PocFieldOverride'])
 
-        # Adding unique constraint on 'PocFieldOverride', fields ['poc', 'location']
-        db.create_unique('pocs_pocfieldoverride', ['poc_id', 'location'])
+        # Adding unique constraint on 'PocFieldOverride', fields ['poc', 'location', 'field']
+        db.create_unique('pocs_pocfieldoverride', ['poc_id', 'location', 'field'])
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'PocFieldOverride', fields ['poc', 'location']
-        db.delete_unique('pocs_pocfieldoverride', ['poc_id', 'location'])
+        # Removing unique constraint on 'PocFieldOverride', fields ['poc', 'location', 'field']
+        db.delete_unique('pocs_pocfieldoverride', ['poc_id', 'location', 'field'])
 
         # Deleting model 'PersonalOnlineCourse'
         db.delete_table('pocs_personalonlinecourse')
@@ -98,7 +98,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         'pocs.pocfieldoverride': {
-            'Meta': {'unique_together': "(('poc', 'location'),)", 'object_name': 'PocFieldOverride'},
+            'Meta': {'unique_together': "(('poc', 'location', 'field'),)", 'object_name': 'PocFieldOverride'},
             'field': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'location': ('xmodule_django.models.LocationKeyField', [], {'max_length': '255', 'db_index': 'True'}),

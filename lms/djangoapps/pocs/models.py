@@ -27,9 +27,9 @@ class PocFieldOverride(models.Model):
     """
     poc = models.ForeignKey(PersonalOnlineCourse, db_index=True)
     location = LocationKeyField(max_length=255, db_index=True)
+    field = models.CharField(max_length=255)
 
     class Meta:
-        unique_together = (('poc', 'location'),)
+        unique_together = (('poc', 'location', 'field'),)
 
-    field = models.CharField(max_length=255)
     value = models.TextField(default='null')

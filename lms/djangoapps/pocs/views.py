@@ -1,5 +1,8 @@
+import datetime
 import functools
 import json
+import logging
+import pytz
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseForbidden
@@ -16,6 +19,8 @@ from student.roles import CoursePocCoachRole
 
 from .models import PersonalOnlineCourse
 from .overrides import override_field_for_poc, get_override_for_poc
+
+log = logging.getLogger(__name__)
 
 
 def coach_dashboard(view):
@@ -71,6 +76,23 @@ def create_poc(request, course):
         display_name=name)
     poc.save()
     url = reverse('poc_coach_dashboard', kwargs={'course_id': course.id})
+
+    today = datetime.datetime.today().replace(tzinfo=pytz.UTC)
+    for chapter in course.get_children():
+        override_field_for_poc(poc, chapter, 'start', today)
+        override_field_for_poc(poc, chapter, 'due', None)
+        override_field_for_poc(poc, chapter, 'hidden', True)
+        # XXX Will setting None for inheritable fields cause inheritance to
+        # kick in or not?
+        for sequential in chapter.get_children():
+            override_field_for_poc(poc, sequential, 'start', None)
+            override_field_for_poc(poc, sequential, 'due', None)
+            override_field_for_poc(poc, sequential, 'hidden', True)
+            for vertical in sequential.get_children():
+                override_field_for_poc(poc, vertical, 'start', None)
+                override_field_for_poc(poc, vertical, 'due', None)
+                override_field_for_poc(poc, vertical, 'hidden', True)
+
     return redirect(url)
 
 
@@ -90,6 +112,13 @@ def save_poc(request, course):
         for unit in data:
             block = blocks[unit['location']]
             override_field_for_poc(poc, block, 'hidden', unit['hidden'])
+            start = parse_date(unit['start'])
+            if start:
+                override_field_for_poc(poc, block, 'start', start)
+            due = parse_date(unit['due'])
+            if due:
+                override_field_for_poc(poc, block, 'due', due)
+
             children = unit.get('children', None)
             if children:
                 override_fields(block, children)
@@ -98,6 +127,20 @@ def save_poc(request, course):
     return HttpResponse(
         json.dumps(get_poc_schedule(course, poc)),
         content_type='application/json')
+
+
+def parse_date(s):
+    if s:
+        try:
+            date, time = s.split(' ')
+            year, month, day = map(int, date.split('-'))
+            hour, minute = map(int, time.split(':'))
+            return datetime.datetime(
+                year, month, day, hour, minute, tzinfo=pytz.UTC)
+        except:
+            log.warn("Unable to parse date: " + s)
+
+    return None
 
 
 def get_poc_for_coach(course, coach):
@@ -118,12 +161,12 @@ def get_poc_schedule(course, poc):
     """
     def visit(node, depth=1):
         for child in node.get_children():
-            start = get_override_for_poc(poc, child, 'start', child.start)
+            start = get_override_for_poc(poc, child, 'start', None)
             if start:
-                start = str(child.start)[:-9]
-            due = get_override_for_poc(poc, child, 'due', child.due)
+                start = str(start)[:-9]
+            due = get_override_for_poc(poc, child, 'due', None)
             if due:
-                due = str(child.due)[:-9]
+                due = str(due)[:-9]
             hidden = get_override_for_poc(poc, child, 'hidden', child.hidden)
             visited = {
                 'location': str(child.location),
