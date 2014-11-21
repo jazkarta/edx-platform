@@ -21,24 +21,32 @@
           </td>
           <td class="date">{{start}}</td>
           <td class="date">{{due}}</td>
-          <td><a href="#"><i class="icon-remove-sign icon"></i> ${_('remove')}</a></td>
+          <td><a href="#" class="remove-unit">
+            <i class="icon-remove-sign icon"></i> ${_('remove')}
+          </a></td>
         </tr>
         {{#each children}}
-          <tr class="sequential collapsed" data-location="{{location}}" data-depth="2">
+          <tr class="sequential collapsed" data-depth="2" 
+              data-location="{{../location}} {{location}}">
             <td class="unit">
               <a href="#"><i class="icon-caret-right icon toggle-collapse"></i></a> 
               {{display_name}}
             </td>
             <td class="date">{{start}}</td>
             <td class="date">{{due}}</td>
-            <td><a href="#"><i class="icon-remove-sign icon"></i> ${_('remove')}</a></td>
+            <td><a href="#" class="remove-unit">
+              <i class="icon-remove-sign icon"></i> ${_('remove')}
+            </a></td>
           </tr>
           {{#each children}}
-            <tr class="vertical" data-location="{{location}}" data-depth="3">
+            <tr class="vertical" data-dapth="3"
+                data-location="{{../../location}} {{../location}} {{location}}">
               <td class="unit">&nbsp;{{display_name}}</td>
               <td class="date">{{start}}</td>
               <td class="date">{{due}}</td>
-              <td><a href="#"><i class="icon-remove-sign icon"></i> ${_('remove')}</a></td>
+              <td><a href="#" class="remove-unit">
+                <i class="icon-remove-sign icon"></i> ${_('remove')}
+              </a></td>
           {{/each}}
         {{/each}}
       {{/each}}
@@ -119,6 +127,14 @@ var poc_schedule = (function () {
     dirty: false
   };
 
+  function hide(unit) {
+    unit.hidden = true;
+  }
+
+  function show(unit) {
+    unit.hidden = false;
+  }
+
   /**
    * Render the course tree view.
    */
@@ -140,7 +156,7 @@ var poc_schedule = (function () {
     // Click handler for remove all
     $('table.poc-schedule a#remove-all').on('click', function(event) {
       event.preventDefault();
-      schedule_apply(self.schedule, function(node) { node.hidden = true; });
+      schedule_apply(self.schedule, hide);
       self.dirty = true;
       self.render();
     });
@@ -194,6 +210,7 @@ var poc_schedule = (function () {
       } 
     });
 
+    // Add unit handler
     $('#add-unit-button').on('click', function(event) {
       event.preventDefault();
       var chapter = chapter_select.val(),
@@ -203,11 +220,21 @@ var poc_schedule = (function () {
             chapter,
             sequential == 'all' ? null : sequential,
             vertical == 'all' ? null: vertical)
-      units.map(function(x) { x.hidden = false; });
+      units.map(show);
       unit = units[units.length - 1]
-      schedule_apply([unit], function(x) { x.hidden = false; });      
+      schedule_apply([unit], show);      
       self.dirty = true;
       self.render();
+    });
+
+    // Remove unit handler
+    $('table.poc-schedule a.remove-unit').on('click', function(event) {
+      var row = $(this).closest('tr'),
+          path = row.data('location').split(' '),
+          unit = find_unit(self.schedule, path[0], path[1], path[2]);
+      schedule_apply([unit], hide);
+      self.dirty = true;
+      self.render(); 
     });
 
     // Show or hide save button
@@ -321,9 +348,7 @@ var poc_schedule = (function () {
    */
   $('#add-all').on('click', function(event) {
       event.preventDefault();
-      schedule_apply(self.schedule, function(node) {
-        node.hidden = false;
-      });
+      schedule_apply(self.schedule, show);
       self.dirty = true;
       self.render();
   });
