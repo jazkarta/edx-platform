@@ -135,6 +135,22 @@ var poc_schedule = (function () {
     unit.hidden = false;
   }
 
+  function get_datetime(which) {
+    var date = $('form#add-unit input[name=' + which + '_date]').val();
+    var time = $('form#add-unit input[name=' + which + '_time]').val();
+    if (date && time)
+      return date + ' ' + time;
+    return null;
+  }
+
+  function set_datetime(which, value) {
+    var parts = value ? value.split(' ') : ['', ''],
+        date = parts[0],
+        time = parts[1];
+    $('form#add-unit input[name=' + which + '_date]').val(date);
+    $('form#add-unit input[name=' + which + '_time]').val(time);
+  }
+
   /**
    * Render the course tree view.
    */
@@ -189,6 +205,8 @@ var poc_schedule = (function () {
           .append(schedule_options(chapter.children));
         sequential_select.prop('disabled', false);
         $('#add-unit-button').prop('disabled', false);
+        set_datetime('start', chapter.start);
+        set_datetime('due', chapter.due);
       }
       else {
         sequential_select.html('').prop('disabled', true);
@@ -204,10 +222,24 @@ var poc_schedule = (function () {
           .append('<option value="all">${_("All verticals")}</option>')
           .append(schedule_options(sequential.children));
         vertical_select.prop('disabled', false);
+        set_datetime('start', sequential.start);
+        set_datetime('due', sequential.due);
       }
       else {
         vertical_select.html('').prop('disabled', true);
       } 
+    });
+    
+    vertical_select.on('change', function(event) {
+      var vertical_location = vertical_select.val();
+      if (vertical_location !== 'all') {
+        var chapter = chapter_select.val(),
+            sequential = sequential_select.val();
+        vertical = find_unit(
+          self.hidden, chapter, sequential, vertical_location);
+        set_datetime('start', vertical.start);
+        set_datetime('due', vertical.due);
+      }
     });
 
     // Add unit handler
@@ -219,10 +251,14 @@ var poc_schedule = (function () {
           units = find_lineage(self.schedule,
             chapter,
             sequential == 'all' ? null : sequential,
-            vertical == 'all' ? null: vertical)
+            vertical == 'all' ? null: vertical),
+          start = get_datetime('start'),
+          due = get_datetime('due');
       units.map(show);
       unit = units[units.length - 1]
       schedule_apply([unit], show);      
+      if (start) unit.start = start;
+      if (due) unit.due = due;
       self.dirty = true;
       self.render();
     });
