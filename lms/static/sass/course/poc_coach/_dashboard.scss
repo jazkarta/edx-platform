@@ -24,6 +24,14 @@ table.poc-schedule {
     .vertical .unit {
         padding-left: 40px;
     }
+    a.empty {
+        display: block;
+        width: 100%;
+        color: white;
+    }
+    a.empty:hover {
+        color: #cbcbcb;
+    }
 }
 
 .poc-schedule-sidebar {

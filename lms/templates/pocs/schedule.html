@@ -19,8 +19,8 @@
             <a href="#"><i class="icon-caret-right icon toggle-collapse"></i></a> 
             {{display_name}}
           </td>
-          <td class="date">{{start}}</td>
-          <td class="date">{{due}}</td>
+          <td class="date start-date"><a>{{start}}</a></td>
+          <td class="date due-date"><a>{{due}}</a></td>
           <td><a href="#" class="remove-unit">
             <i class="icon-remove-sign icon"></i> ${_('remove')}
           </a></td>
@@ -32,8 +32,8 @@
               <a href="#"><i class="icon-caret-right icon toggle-collapse"></i></a> 
               {{display_name}}
             </td>
-            <td class="date">{{start}}</td>
-            <td class="date">{{due}}</td>
+            <td class="date start-date"><a>{{start}}</a></td>
+            <td class="date due-date"><a>{{due}}</a></td>
             <td><a href="#" class="remove-unit">
               <i class="icon-remove-sign icon"></i> ${_('remove')}
             </a></td>
@@ -42,8 +42,8 @@
             <tr class="vertical" data-dapth="3"
                 data-location="{{../../location}} {{../location}} {{location}}">
               <td class="unit">&nbsp;{{display_name}}</td>
-              <td class="date">{{start}}</td>
-              <td class="date">{{due}}</td>
+              <td class="date start-date"><a>{{start}}</a></td>
+              <td class="date due-date"><a>{{due}}</a></td>
               <td><a href="#" class="remove-unit">
                 <i class="icon-remove-sign icon"></i> ${_('remove')}
               </a></td>
@@ -57,6 +57,30 @@
 <div class="poc-schedule-container">
   <div id="poc-schedule"></div>
 </div>
+
+<section id="enter-date-modal" class="modal" aria-hidden="true">
+  <div class="inner-wrapper" role="dialog">
+    <button class="close-modal">
+      <i class="icon-remove"></i>
+      <span class="sr">
+        ${_("Close")}
+      </span>
+    </button>
+    <header>
+      <h2></h2>
+    </header>
+    <form role="form">
+      <div class="field">
+        <label></label>
+        <input type="date" name="date"/>
+        <input type="time" name="time"/>
+      </div>
+      <div class="field">
+        <button type="submit" class="btn btn-primary">${_('Set date')}</button>
+      </div>
+    </form>
+  </div>
+</section>
 
 <div class="poc-schedule-sidebar">
   <div class="poc-sidebar-panel" id="dirty-schedule">
@@ -168,6 +192,19 @@ var poc_schedule = (function () {
 
     // Click handlers for collapsible tree
     $('table.poc-schedule .toggle-collapse').on('click', toggle_collapse);
+
+    // Hidden hover fields for empty date fields
+    $('table.poc-schedule .date a').each(function() {
+      if (! $(this).text()) {
+        $(this).text('Set date').addClass('empty');
+      }
+    });
+    
+    // Handle date edit clicks
+    $('table.poc-schedule .date a').attr('href', '#enter-date-modal')
+      .leanModal({closeButton: '.close-modal'});
+    $('table.poc-schedule .due-date a').on('click', enterNewDate('due'));
+    $('table.poc-schedule .start-date a').on('click', enterNewDate('start'));
 
     // Click handler for remove all
     $('table.poc-schedule a#remove-all').on('click', function(event) {
@@ -287,6 +324,41 @@ var poc_schedule = (function () {
   }
 
   /**
+   * Handle date entry.
+   */
+  function enterNewDate(what) {
+    return function(event) {
+      var row = $(this).closest('tr');
+      var modal = $('#enter-date-modal')
+        .data('what', what)
+        .data('location', row.data('location'));
+      modal.find('h2').text(
+          what == 'due' ? '${_("Enter Due Date")}' : 
+              '${_("Enter Start Date")}');
+      modal.find('label').text(row.find('td:first').text());
+
+      var path = row.data('location').split(' '),
+          unit = find_unit(self.schedule, path[0], path[1], path[2]),
+          parts = unit[what] ? unit[what].split(' ') : ['', ''],
+          date = parts[0],
+          time = parts[1];
+
+      modal.find('input[name=date]').val(date);
+      modal.find('input[name=time]').val(time);
+
+      modal.find('form').off('submit').on('submit', function(event) {
+        event.preventDefault();
+        var date = $(this).find('input[name=date]').val(),
+            time = $(this).find('input[name=time]').val();
+        unit[what] = date + ' ' + time;
+        modal.find('.close-modal').click();
+        self.dirty = true;
+        self.render();
+      });
+    }
+  }
+
+  /**
    * Returns a sequence of <option> DOM elements for a particular sequence
    * of schedule nodes.
    */
@@ -355,8 +427,7 @@ var poc_schedule = (function () {
    * Save changes.
    */
   self.save = function() {
-    var button = $('#dirty-schedule #save-changes'),
-        button_text = button.text();
+    var button = $('#dirty-schedule #save-changes');
     button.prop('disabled', true).text('${_("Saving")}...');
     
     $.ajax({
@@ -368,7 +439,7 @@ var poc_schedule = (function () {
           self.schedule = data;
           self.dirty = false;
           self.render();
-          button.prop('disabled', false).text(button_text);
+          button.prop('disabled', false).text('${_("Save changes")}');
         },
         error: function(jqXHR, textStatus, error) {
           console.log(jqXHR.responseText);
