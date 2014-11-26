@@ -394,3 +394,7 @@ MONGODB_LOG = {
     'password': '',
     'db': 'xlog',
 }
+
+######### personal online courses #########
+INSTALLED_APPS += ('pocs',)
+
