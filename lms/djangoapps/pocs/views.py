@@ -21,6 +21,7 @@ from .models import PersonalOnlineCourse
 from .overrides import override_field_for_poc, get_override_for_poc
 
 log = logging.getLogger(__name__)
+today = datetime.datetime.today  # for patching in tests
 
 
 def coach_dashboard(view):
@@ -77,9 +78,9 @@ def create_poc(request, course):
     poc.save()
     url = reverse('poc_coach_dashboard', kwargs={'course_id': course.id})
 
-    today = datetime.datetime.today().replace(tzinfo=pytz.UTC)
+    start = today().replace(tzinfo=pytz.UTC)
     for chapter in course.get_children():
-        override_field_for_poc(poc, chapter, 'start', today)
+        override_field_for_poc(poc, chapter, 'start', start)
         override_field_for_poc(poc, chapter, 'due', None)
         override_field_for_poc(poc, chapter, 'hidden', True)
         # XXX Will setting None for inheritable fields cause inheritance to

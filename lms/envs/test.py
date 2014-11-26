@@ -439,3 +439,6 @@ MONGODB_LOG = {
 
 # Enable EdxNotes for tests.
 FEATURES['ENABLE_EDXNOTES'] = True
+
+######### personal online courses #########
+INSTALLED_APPS += ('pocs',)
