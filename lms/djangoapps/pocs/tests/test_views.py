@@ -12,6 +12,9 @@ from student.tests.factories import AdminFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 
+from ..models import PersonalOnlineCourse
+from ..overrides import get_override_for_poc
+
 
 def intercept_renderer(path, context):
     """
@@ -134,15 +137,21 @@ class TestInstructorDashboard(ModuleStoreTestCase, LoginEnrollmentTestCase):
             kwargs={'course_id': self.course.id.to_deprecated_string()})
 
         schedule[0]['hidden'] = False
-        schedule[0]['start'] = u'2014-12-20 00:00'
+        schedule[0]['start'] = u'2014-11-20 00:00'
         schedule[0]['children'][0]['due'] = u'2014-12-25 00:00'  # what a jerk!
         response = self.client.post(url, json.dumps(schedule),
                          content_type='application/json')
 
         schedule = json.loads(response.content)
         self.assertEqual(schedule[0]['hidden'], False)
-        self.assertEqual(schedule[0]['start'], u'2014-12-20 00:00')
+        self.assertEqual(schedule[0]['start'], u'2014-11-20 00:00')
         self.assertEqual(schedule[0]['children'][0]['due'], u'2014-12-25 00:00')
+
+        # Make sure start date set on course, follows start date of earliest
+        # scheduled chapter
+        poc = PersonalOnlineCourse.objects.get()
+        course_start = get_override_for_poc(poc, self.course, 'start')
+        self.assertEqual(str(course_start)[:-9], u'2014-11-20 00:00')
 
 
 def flatten(seq):

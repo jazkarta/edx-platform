@@ -76,24 +76,22 @@ def create_poc(request, course):
         coach=request.user,
         display_name=name)
     poc.save()
-    url = reverse('poc_coach_dashboard', kwargs={'course_id': course.id})
 
+    # Make sure start/due are overridden for entire course
     start = today().replace(tzinfo=pytz.UTC)
+    override_field_for_poc(poc, course, 'start', start)
+    override_field_for_poc(poc, course, 'due', None)
+
+    # Hide anything that can appear in the course outline to start out with
     for chapter in course.get_children():
         override_field_for_poc(poc, chapter, 'start', start)
-        override_field_for_poc(poc, chapter, 'due', None)
         override_field_for_poc(poc, chapter, 'hidden', True)
-        # XXX Will setting None for inheritable fields cause inheritance to
-        # kick in or not?
         for sequential in chapter.get_children():
-            override_field_for_poc(poc, sequential, 'start', None)
-            override_field_for_poc(poc, sequential, 'due', None)
             override_field_for_poc(poc, sequential, 'hidden', True)
             for vertical in sequential.get_children():
-                override_field_for_poc(poc, vertical, 'start', None)
-                override_field_for_poc(poc, vertical, 'due', None)
                 override_field_for_poc(poc, vertical, 'hidden', True)
 
+    url = reverse('poc_coach_dashboard', kwargs={'course_id': course.id})
     return redirect(url)
 
 
@@ -106,7 +104,7 @@ def save_poc(request, course):
     """
     poc = get_poc_for_coach(course, request.user)
 
-    def override_fields(parent, data):
+    def override_fields(parent, data, earliest=None):
         blocks = {
             str(child.location): child
             for child in parent.get_children()}
@@ -115,6 +113,8 @@ def save_poc(request, course):
             override_field_for_poc(poc, block, 'hidden', unit['hidden'])
             start = parse_date(unit['start'])
             if start:
+                if not earliest or start < earliest:
+                    earliest = start
                 override_field_for_poc(poc, block, 'start', start)
             due = parse_date(unit['due'])
             if due:
@@ -122,9 +122,13 @@ def save_poc(request, course):
 
             children = unit.get('children', None)
             if children:
-                override_fields(block, children)
+                override_fields(block, children, earliest)
+        return earliest
 
-    override_fields(course, json.loads(request.body))
+    earliest = override_fields(course, json.loads(request.body))
+    if earliest:
+        override_field_for_poc(poc, course, 'start', earliest)
+
     return HttpResponse(
         json.dumps(get_poc_schedule(course, poc)),
         content_type='application/json')
