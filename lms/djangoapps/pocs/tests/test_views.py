@@ -146,5 +146,8 @@ class TestInstructorDashboard(ModuleStoreTestCase, LoginEnrollmentTestCase):
 
 
 def flatten(seq):
+    """
+    For [[1, 2], [3, 4]] returns [1, 2, 3, 4].  Does not recurse.
+    """
     return [x for sub in seq for x in sub]
 
