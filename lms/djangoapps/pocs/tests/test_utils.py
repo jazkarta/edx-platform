@@ -1,9 +1,17 @@
-from pocs.tests.factories import POCFactory
-from pocs.tests.factories import POCMembershipFactory
-from pocs.utils import EmailEnrollmentState
+from pocs.models import (
+    PocMembership,
+    PocFutureMembership,
+)
+from pocs.tests.factories import (
+    PocFactory,
+    PocMembershipFactory,
+    PocFutureMembershipFactory,
+)
 from student.roles import CoursePocCoachRole
-from student.tests.factories import AdminFactory
-from student.tests.factories import UserFactory
+from student.tests.factories import (
+    AdminFactory,
+    UserFactory,
+)
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
@@ -20,7 +28,7 @@ class TestEmailEnrollmentState(ModuleStoreTestCase):
         coach = AdminFactory.create()
         role = CoursePocCoachRole(course.id)
         role.add_users(coach)
-        self.poc = POCFactory(course_id=course.id, coach=coach)
+        self.poc = PocFactory(course_id=course.id, coach=coach)
 
     def create_user(self):
         """provide a legitimate django user for testing
@@ -34,9 +42,12 @@ class TestEmailEnrollmentState(ModuleStoreTestCase):
         registration will be inactive
         """
         self.create_user()
-        POCMembershipFactory(poc=self.poc, student=self.user)
+        PocMembershipFactory(poc=self.poc, student=self.user)
 
     def create_one(self, email=None):
+        """Create a single EmailEnrollmentState object and return it
+        """
+        from pocs.utils import EmailEnrollmentState
         if email is None:
             email = self.user.email
         return EmailEnrollmentState(self.poc, email)
@@ -112,7 +123,7 @@ class TestGetEmailParams(ModuleStoreTestCase):
         coach = AdminFactory.create()
         role = CoursePocCoachRole(course.id)
         role.add_users(coach)
-        self.poc = POCFactory(course_id=course.id, coach=coach)
+        self.poc = PocFactory(course_id=course.id, coach=coach)
         self.all_keys = [
             'site_name', 'course', 'course_url', 'registration_url',
             'course_about_url', 'auto_enroll'
@@ -161,7 +172,7 @@ class TestEnrollEmail(ModuleStoreTestCase):
         coach = AdminFactory.create()
         role = CoursePocCoachRole(course.id)
         role.add_users(coach)
-        self.poc = POCFactory(course_id=course.id, coach=coach)
+        self.poc = PocFactory(course_id=course.id, coach=coach)
         self.outbox = self.get_outbox()
 
     def create_user(self):
@@ -176,11 +187,41 @@ class TestEnrollEmail(ModuleStoreTestCase):
         registration will be inactive
         """
         self.create_user()
-        POCMembershipFactory(poc=self.poc, student=self.user)
+        PocMembershipFactory(poc=self.poc, student=self.user)
 
     def get_outbox(self):
+        """Return the django mail outbox"""
         from django.core import mail
         return mail.outbox
+
+    def check_membership(self, email=None, user=None, future=False):
+        """Verify tjat an appropriate Poc Membership exists"""
+        if not email and not user:
+            self.fail(
+                "must provide user or email address to check Poc Membership"
+            )
+        if future and email:
+            membership = PocFutureMembership.objects.filter(
+                poc=self.poc, email=email
+            )
+        elif not future:
+            if not user:
+                user = self.user
+            membership = PocMembership.objects.filter(
+                poc=self.poc, student=user
+            )
+        self.assertTrue(membership.exists())
+
+    def check_enrollment_state(self, state, in_poc, member, user):
+        """Verify an enrollment state object against provided arguments
+
+        state.in_poc will always be a boolean
+        state.user will always be a boolean
+        state.member will be a Django user object or None
+        """
+        self.assertEqual(in_poc, state.in_poc)
+        self.assertEqual(member, state.member)
+        self.assertEqual(user, state.user)
 
     def call_FUT(
         self,
@@ -197,20 +238,37 @@ class TestEnrollEmail(ModuleStoreTestCase):
         )
         return before, after
 
+    def test_enroll_non_user_sending_email(self):
+        """enroll a non-user email and send an enrollment email to them
+        """
+        # ensure no emails are in the outbox now
+        self.assertEqual(len(self.outbox), 0)
+        test_email = "nobody@nowhere.com"
+        before, after = self.call_FUT(
+            student_email=test_email, email_students=True
+        )
+
+        # there should be a future membership set for this email address now
+        self.check_membership(email=test_email, future=True)
+        for state in [before, after]:
+            self.check_enrollment_state(state, False, None, False)
+        # mail was sent and to the right person
+        self.assertEqual(len(self.outbox), 1)
+        msg = self.outbox[0]
+        self.assertTrue(test_email in msg.recipients())
+
     def test_enroll_non_member_sending_email(self):
         """register a non-member and send an enrollment email to them
         """
         self.create_user()
         # ensure no emails are in the outbox now
         self.assertEqual(len(self.outbox), 0)
-
         before, after = self.call_FUT(email_students=True)
-        self.assertFalse(before.in_poc)
-        self.assertTrue(after.in_poc)
-        for state in [before, after]:
-            self.assertEqual(state.member, self.user)
-            self.assertTrue(state.user)
 
+        # there should be a membership set for this email address now
+        self.check_membership(email=self.user.email)
+        self.check_enrollment_state(before, False, self.user, True)
+        self.check_enrollment_state(after, True, self.user, True)
         # mail was sent and to the right person
         self.assertEqual(len(self.outbox), 1)
         msg = self.outbox[0]
@@ -222,31 +280,46 @@ class TestEnrollEmail(ModuleStoreTestCase):
         self.register_user_in_poc()
         # ensure no emails are in the outbox now
         self.assertEqual(len(self.outbox), 0)
-
         before, after = self.call_FUT(email_students=True)
-        for state in [before, after]:
-            self.assertTrue(state.in_poc)
-            self.assertEqual(state.member, self.user)
-            self.assertTrue(state.user)
 
+        # there should be a membership set for this email address now
+        self.check_membership(email=self.user.email)
+        for state in [before, after]:
+            self.check_enrollment_state(state, True, self.user, True)
         # mail was sent and to the right person
         self.assertEqual(len(self.outbox), 1)
         msg = self.outbox[0]
         self.assertTrue(self.user.email in msg.recipients())
+
+    def test_enroll_non_user_no_email(self):
+        """register a non-user via email address but send no email
+        """
+        # ensure no emails are in the outbox now
+        self.assertEqual(len(self.outbox), 0)
+        test_email = "nobody@nowhere.com"
+        before, after = self.call_FUT(
+            student_email=test_email, email_students=False
+        )
+
+        # there should be a future membership set for this email address now
+        self.check_membership(email=test_email, future=True)
+        for state in [before, after]:
+            self.check_enrollment_state(state, False, None, False)
+        # ensure there are still no emails in the outbox now
+        self.assertEqual(len(self.outbox), 0)
+
 
     def test_enroll_non_member_no_email(self):
         """register a non-member but send no email"""
         self.create_user()
         # ensure no emails are in the outbox now
         self.assertEqual(len(self.outbox), 0)
-
         before, after = self.call_FUT(email_students=False)
-        self.assertFalse(before.in_poc)
-        self.assertTrue(after.in_poc)
-        for state in [before, after]:
-            self.assertEqual(state.member, self.user)
-            self.assertTrue(state.user)
 
+        # there should be a membership set for this email address now
+        self.check_membership(email=self.user.email)
+        self.check_enrollment_state(before, False, self.user, True)
+        self.check_enrollment_state(after, True, self.user, True)
         # ensure there are still no emails in the outbox now
         self.assertEqual(len(self.outbox), 0)
 
@@ -256,12 +329,156 @@ class TestEnrollEmail(ModuleStoreTestCase):
         self.register_user_in_poc()
         # ensure no emails are in the outbox now
         self.assertEqual(len(self.outbox), 0)
-
         before, after = self.call_FUT(email_students=False)
-        for state in [before, after]:
-            self.assertTrue(state.in_poc)
-            self.assertEqual(state.member, self.user)
-            self.assertTrue(state.user)
 
+        # there should be a membership set for this email address now
+        self.check_membership(email=self.user.email)
+        for state in [before, after]:
+            self.check_enrollment_state(state, True, self.user, True)
         # ensure there are still no emails in the outbox now
+        self.assertEqual(len(self.outbox), 0)
+
+
+# TODO: deal with changes in behavior for auto_enroll
+class TestUnenrollEmail(ModuleStoreTestCase):
+    """Tests for the unenroll_email function from pocs.utils"""
+    def setUp(self):
+        course = CourseFactory.create()
+        coach = AdminFactory.create()
+        role = CoursePocCoachRole(course.id)
+        role.add_users(coach)
+        self.poc = PocFactory(course_id=course.id, coach=coach)
+        self.outbox = self.get_outbox()
+
+    def tearDown(self):
+        for attr in ['user', 'email']:
+            if hasattr(self, attr):
+                delattr(self, attr)
+
+    def get_outbox(self):
+        """Return the django mail outbox"""
+        from django.core import mail
+        return mail.outbox
+
+    def create_user(self):
+        """provide a legitimate django user for testing
+        """
+        if getattr(self, 'user', None) is None:
+            self.user = UserFactory()
+
+    def make_poc_membership(self):
+        """create registration of self.user in self.poc
+
+        registration will be inactive
+        """
+        self.create_user()
+        PocMembershipFactory.create(poc=self.poc, student=self.user)
+
+    def make_poc_future_membership(self):
+        """create future registration for email in self.poc"""
+        self.email = "nobody@nowhere.com"
+        PocFutureMembershipFactory.create(
+            poc=self.poc, email=self.email
+        )
+
+    def check_enrollment_state(self, state, in_poc, member, user):
+        """Verify an enrollment state object against provided arguments
+
+        state.in_poc will always be a boolean
+        state.user will always be a boolean
+        state.member will be a Django user object or None
+        """
+        self.assertEqual(in_poc, state.in_poc)
+        self.assertEqual(member, state.member)
+        self.assertEqual(user, state.user)
+
+    def check_membership(self, future=False):
+        if future:
+            membership = PocFutureMembership.objects.filter(
+                poc=self.poc, email=self.email
+            )
+        else:
+            membership = PocMembership.objects.filter(
+                poc=self.poc, student=self.user
+            )
+        return membership.exists()
+
+    def call_FUT(self, email_students=False):
+        from pocs.utils import unenroll_email
+        email = hasattr(self, 'user') and self.user.email or self.email
+        return unenroll_email(self.poc, email, email_students=email_students)
+
+    def test_unenroll_future_member_with_email(self):
+        """unenroll a future member and send an email
+        """
+        self.make_poc_future_membership()
+        # assert that a membership exists and that no emails have been sent
+        self.assertTrue(self.check_membership(future=True))
+        self.assertEqual(len(self.outbox), 0)
+        # unenroll the student
+        before, after = self.call_FUT(email_students=True)
+
+        # assert that membership is now gone
+        self.assertFalse(self.check_membership(future=True))
+        # validate the before and after enrollment states
+        for state in [before, after]:
+            self.check_enrollment_state(state, False, None, False)
+        # check that mail was sent and to the right person
+        self.assertEqual(len(self.outbox), 1)
+        msg = self.outbox[0]
+        self.assertTrue(self.email in msg.recipients())
+
+    def test_unenroll_member_with_email(self):
+        """unenroll a current member and send an email"""
+        self.make_poc_membership()
+        # assert that a membership exists and that no emails have been sent
+        self.assertTrue(self.check_membership())
+        self.assertEqual(len(self.outbox), 0)
+        # unenroll the student
+        before, after = self.call_FUT(email_students=True)
+
+        # assert that membership is now gone
+        self.assertFalse(self.check_membership())
+        # validate the before and after enrollment state
+        self.check_enrollment_state(after, False, self.user, True)
+        self.check_enrollment_state(before, True, self.user, True)
+        # check that mail was sent and to the right person
+        self.assertEqual(len(self.outbox), 1)
+        msg = self.outbox[0]
+        self.assertTrue(self.user.email in msg.recipients())
+
+    def test_unenroll_future_member_no_email(self):
+        """unenroll a future member but send no email
+        """
+        self.make_poc_future_membership()
+        # assert that a membership exists and that no emails have been sent
+        self.assertTrue(self.check_membership(future=True))
+        self.assertEqual(len(self.outbox), 0)
+        # unenroll the student
+        before, after = self.call_FUT()
+
+        # assert that membership is now gone
+        self.assertFalse(self.check_membership(future=True))
+        # validate the before and after enrollment states
+        for state in [before, after]:
+            self.check_enrollment_state(state, False, None, False)
+        # no email was sent to the student
+        self.assertEqual(len(self.outbox), 0)
+
+    def test_unenroll_member_no_email(self):
+        """unenroll a current member but send no email
+        """
+        self.make_poc_membership()
+        # assert that a membership exists and that no emails have been sent
+        self.assertTrue(self.check_membership())
+        self.assertEqual(len(self.outbox), 0)
+        # unenroll the student
+        before, after = self.call_FUT()
+
+        # assert that membership is now gone
+        self.assertFalse(self.check_membership())
+        # validate the before and after enrollment state
+        self.check_enrollment_state(after, False, self.user, True)
+        self.check_enrollment_state(before, True, self.user, True)
+        # no email was sent to the student
         self.assertEqual(len(self.outbox), 0)
