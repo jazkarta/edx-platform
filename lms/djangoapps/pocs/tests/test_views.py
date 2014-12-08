@@ -279,7 +279,7 @@ class TestCoachDashboard(ModuleStoreTestCase, LoginEnrollmentTestCase):
             kwargs={'course_id': self.course.id.to_deprecated_string()}
         )
         data = {
-            'enrollment-button': 'Enroll',
+            'enrollment-button': 'Unenroll',
             'student-ids': u','.join([test_email, ]),
         }
         response = self.client.post(url, data=data, follow=True)
