@@ -301,7 +301,7 @@ class TestCoachDashboard(ModuleStoreTestCase, LoginEnrollmentTestCase):
 
 USER_COUNT = 2
 
-class TestPocGradebook(ModuleStoreTestCase, LoginEnrollmentTestCase):
+class TestPocGrades(ModuleStoreTestCase, LoginEnrollmentTestCase):
     """
     Tests for Personal Online Courses views.
     """
@@ -369,6 +369,16 @@ class TestPocGradebook(ModuleStoreTestCase, LoginEnrollmentTestCase):
         self.assertEqual(
             student_info[1]['grade_summary']['grade_breakdown'][0]['percent'],
             0.015)
+
+    def test_grades_csv(self):
+        url = reverse(
+            'poc_grades_csv',
+            kwargs={'course_id': self.course.id.to_deprecated_string()}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(response.content.strip().split('\n')), USER_COUNT + 1)
 
 
 def flatten(seq):
