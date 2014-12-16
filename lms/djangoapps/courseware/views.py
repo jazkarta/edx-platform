@@ -963,6 +963,7 @@ def _progress(request, course_key, student_id):
         #This means the student didn't have access to the course (which the instructor requested)
         raise Http404
 
+    import pdb; pdb.set_trace()
     context = {
         'course': course,
         'courseware_summary': courseware_summary,
