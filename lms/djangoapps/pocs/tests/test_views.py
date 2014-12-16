@@ -403,7 +403,7 @@ class TestPocGrades(ModuleStoreTestCase, LoginEnrollmentTestCase):
         role.add_users(coach)
         self.poc = poc = PocFactory(course_id=self.course.id, coach=self.coach)
 
-        student = UserFactory.create()
+        self.student = student = UserFactory.create()
         CourseEnrollmentFactory.create(user=student, course_id=self.course.id)
         PocMembershipFactory(poc=poc, student=student, active=True)
 
@@ -485,6 +485,25 @@ class TestPocGrades(ModuleStoreTestCase, LoginEnrollmentTestCase):
         self.assertEqual(data['HW 03'], '0.25')
         self.assertEqual(data['HW Avg'], '0.5')
         self.assertTrue('HW 04' not in data)
+
+    @patch('courseware.views.render_to_response', intercept_renderer)
+    def test_student_progress(self):
+        patch_context = patch('courseware.views.get_course_with_access')
+        get_course = patch_context.start()
+        get_course.return_value = self.course
+        self.addCleanup(patch_context.stop)
+
+        self.client.login(username=self.student.username, password="test")
+        url = reverse(
+            'progress',
+            kwargs={'course_id': self.course.id.to_deprecated_string()}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        grades = response.mako_context['grade_summary']
+        self.assertEqual(grades['percent'], 0.5)
+        self.assertEqual( grades['grade_breakdown'][0]['percent'], 0.5)
+        self.assertEqual(len(grades['section_breakdown']), 4)
 
 
 def flatten(seq):
