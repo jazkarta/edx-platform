@@ -376,7 +376,7 @@ def poc_grades_csv(request, course):
 
         header = None
         rows = []
-        for student, gradeset, _ in grades:
+        for student, gradeset, __ in grades:
             if gradeset:
                 # We were able to successfully grade this student for this
                 # course.
