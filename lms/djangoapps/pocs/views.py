@@ -79,7 +79,7 @@ def dashboard(request, course):
         'gradebook_url': reverse('poc_gradebook',
                                  kwargs={'course_id': course.id}),
         'grades_csv_url': reverse('poc_grades_csv',
-                                 kwargs={'course_id': course.id}),
+                                  kwargs={'course_id': course.id}),
     }
     if not poc:
         context['create_poc_url'] = reverse(
