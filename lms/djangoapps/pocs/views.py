@@ -77,6 +77,8 @@ def dashboard(request, course):
     """
     poc = get_poc_for_coach(course, request.user)
     schedule = get_poc_schedule(course, poc)
+    grading_policy = get_override_for_poc(poc, course, 'grading_policy',
+                                          course.grading_policy)
     context = {
         'course': course,
         'poc': poc,
@@ -87,6 +89,9 @@ def dashboard(request, course):
                                  kwargs={'course_id': course.id}),
         'grades_csv_url': reverse('poc_grades_csv',
                                   kwargs={'course_id': course.id}),
+        'grading_policy': json.dumps(grading_policy, indent=4),
+        'grading_policy_url': reverse('poc_set_grading_policy',
+                                      kwargs={'course_id': course.id}),
     }
     if not poc:
         context['create_poc_url'] = reverse(
@@ -173,6 +178,21 @@ def save_poc(request, course):
     return HttpResponse(
         json.dumps(get_poc_schedule(course, poc)),
         content_type='application/json')
+
+
+@ensure_csrf_cookie
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+@coach_dashboard
+def set_grading_policy(request, course):
+    """
+    Set grading policy for the POC.
+    """
+    poc = get_poc_for_coach(course, request.user)
+    override_field_for_poc(
+        poc, course, 'grading_policy', json.loads(request.POST['policy']))
+
+    url = reverse('poc_coach_dashboard', kwargs={'course_id': course.id})
+    return redirect(url)
 
 
 def parse_date(datestring):
