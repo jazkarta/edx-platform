@@ -67,16 +67,30 @@ def get_override_for_poc(poc, block, name, default=None):
     specify the block and the name of the field.  If the field is not
     overridden for the given poc, returns `default`.
     """
-    try:
-        override = PocFieldOverride.objects.get(
-            poc=poc,
-            location=block.location,
-            field=name)
-        field = block.fields[name]
-        return field.from_json(json.loads(override.value))
-    except PocFieldOverride.DoesNotExist:
-        pass
-    return default
+    if not hasattr(block, '_poc_overrides'):
+        block._poc_overrides = {}
+    overrides = block._poc_overrides.get(poc.id)
+    if overrides is None:
+        overrides = _get_overrides_for_poc(poc, block)
+        block._poc_overrides[poc.id] = overrides
+    return overrides.get(name, default)
+
+
+def _get_overrides_for_poc(poc, block):
+    """
+    Returns a dictionary mapping field name to overriden value for any
+    overrides set on this block for this POC.
+    """
+    overrides = {}
+    query = PocFieldOverride.objects.filter(
+        poc=poc,
+        location=block.location
+    )
+    for override in query:
+        field = block.fields[override.field]
+        value = field.from_json(json.loads(override.value))
+        overrides[override.field] = value
+    return overrides
 
 
 def override_field_for_poc(poc, block, name, value):
@@ -93,6 +107,9 @@ def override_field_for_poc(poc, block, name, value):
     override.value = json.dumps(field.to_json(value))
     override.save()
 
+    if hasattr(block, '_poc_overrides'):
+        del block._poc_overrides[poc.id]
+
 
 def clear_override_for_poc(poc, block, name):
     """
@@ -106,6 +123,10 @@ def clear_override_for_poc(poc, block, name):
             poc=poc,
             location=block.location,
             field=name).delete()
+
+        if hasattr(block, '_poc_overrides'):
+            del block._poc_overrides[poc.id]
+
     except PocFieldOverride.DoesNotExist:
         pass
 
