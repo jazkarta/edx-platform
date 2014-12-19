@@ -565,3 +565,17 @@ CDN_VIDEO_URLS = ENV_TOKENS.get('CDN_VIDEO_URLS', CDN_VIDEO_URLS)
 ECOMMERCE_API_URL = ENV_TOKENS.get('ECOMMERCE_API_URL', ECOMMERCE_API_URL)
 ECOMMERCE_API_SIGNING_KEY = AUTH_TOKENS.get('ECOMMERCE_API_SIGNING_KEY', ECOMMERCE_API_SIGNING_KEY)
 ECOMMERCE_API_TIMEOUT = ENV_TOKENS.get('ECOMMERCE_API_TIMEOUT', ECOMMERCE_API_TIMEOUT)
+
+##### Personal Online Courses #####
+if FEATURES.get('PERSONAL_ONLINE_COURSES'):
+    INSTALLED_APPS += ('pocs',)
+    MIDDLEWARE_CLASSES += ('pocs.overrides.PocMiddleware',)
+    FIELD_OVERRIDE_PROVIDERS += (
+        'pocs.overrides.PersonalOnlineCoursesOverrideProvider',
+    )
+
+##### Individual Due Date Extensions #####
+if FEATURES.get('INDIVIDUAL_DUE_DATES'):
+    FIELD_OVERRIDE_PROVIDERS += (
+        'courseware.student_field_overrides.IndividualStudentOverrideProvider',
+    )
