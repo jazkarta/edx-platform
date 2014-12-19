@@ -54,33 +54,11 @@ def poc_context(poc):
 
 def get_current_poc(user):
     """
-    Return the poc that is active for this user
-
-    The user's session data is used to look up the active poc by id
-    If no poc is active, None is returned and MOOC view will take precedence
-    Active poc can be overridden by context manager (see `poc_context`)
+    Return the poc that is active for this request.
     """
-    # If poc context is explicitly set, that takes precedence over the user's
-    # session.
     poc = _POC_CONTEXT.poc
     if poc:
         return poc
-
-    request = get_request_for_thread()
-    if request is None:
-        return None
-
-    poc = None
-    poc_id = request.session.get(ACTIVE_POC_KEY, None)
-    if poc_id is not None:
-        try:
-            membership = PocMembership.objects.get(
-                student=user, active=True, poc__id__exact=poc_id
-            )
-            poc = membership.poc
-        except PocMembership.DoesNotExist:
-            pass
-    return poc
 
 
 def get_override_for_poc(poc, block, name, default=None):
@@ -130,3 +108,30 @@ def clear_override_for_poc(poc, block, name):
             field=name).delete()
     except PocFieldOverride.DoesNotExist:
         pass
+
+
+class PocMiddleware(object):
+    """
+    Checks to see if current session is examining a POC and sets the POC as
+    the current POC for the override machinery if so.
+    """
+    def process_request(self, request):
+        """
+        Do the check.
+        """
+        poc_id = request.session.get(ACTIVE_POC_KEY, None)
+        if poc_id is not None:
+            try:
+                membership = PocMembership.objects.get(
+                    student=request.user, active=True, poc__id__exact=poc_id
+                )
+                _POC_CONTEXT.poc = membership.poc
+            except PocMembership.DoesNotExist:
+                pass
+
+    def process_response(self, request, response):
+        """
+        Clean up afterwards.
+        """
+        _POC_CONTEXT.poc = None
+        return response
