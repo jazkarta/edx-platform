@@ -325,6 +325,8 @@ def poc_invite(request, course):
     action = request.POST.get('enrollment-button')
     identifiers_raw = request.POST.get('student-ids')
     identifiers = _split_input_list(identifiers_raw)
+    auto_enroll = True if 'auto-enroll' in request.POST else False
+    email_students = True if 'email-students' in request.POST else False
     for identifier in identifiers:
         user = None
         email = None
@@ -337,9 +339,14 @@ def poc_invite(request, course):
         try:
             validate_email(email)
             if action == 'Enroll':
-                enroll_email(poc, email, email_students=True)
+                enroll_email(
+                    poc,
+                    email,
+                    auto_enroll=auto_enroll,
+                    email_students=email_students
+                )
             if action == "Unenroll":
-                unenroll_email(poc, email, email_students=True)
+                unenroll_email(poc, email, email_students=email_students)
         except ValidationError:
             pass  # maybe log this?
     url = reverse('poc_coach_dashboard', kwargs={'course_id': course.id})
