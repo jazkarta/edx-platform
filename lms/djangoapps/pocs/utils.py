@@ -65,7 +65,14 @@ def enroll_email(poc, student_email, auto_enroll=False, email_students=False, em
     if previous_state.user:
         if not previous_state.in_poc:
             user = User.objects.get(email=student_email)
-            membership = PocMembership(poc=poc, student=user)
+            membership = PocMembership(
+                poc=poc, student=user, active=True
+            )
+            membership.save()
+        elif auto_enroll:
+            # activate existing memberships
+            membership = PocMembership.objects.get(student=user, poc=poc)
+            membership.active = True
             membership.save()
         if email_students:
             email_params['message'] = 'enrolled_enroll'
