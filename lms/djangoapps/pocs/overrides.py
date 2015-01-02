@@ -7,7 +7,6 @@ import threading
 
 from contextlib import contextmanager
 
-from courseware.courses import get_request_for_thread
 from courseware.field_overrides import FieldOverrideProvider
 from pocs import ACTIVE_POC_KEY
 
