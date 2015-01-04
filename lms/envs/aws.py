@@ -499,14 +499,14 @@ PDF_RECEIPT_COBRAND_LOGO_HEIGHT_MM = ENV_TOKENS.get(
 
 ##### Personal Online Courses #####
 if FEATURES.get('PERSONAL_ONLINE_COURSES'):
-    INSTALLED_APPS += ('pocs')
-    MIDDLEWARE_CLASSES += ('pocs.overrides.PocMiddleware')
+    INSTALLED_APPS += ('pocs',)
+    MIDDLEWARE_CLASSES += ('pocs.overrides.PocMiddleware',)
     FIELD_OVERRIDE_PROVIDERS += (
-        'pocs.overrides.PersonalOnlineCoursesOverrideProvider'
+        'pocs.overrides.PersonalOnlineCoursesOverrideProvider',
     )
 
 ##### Individual Due Date Extensions #####
 if FEATURES.get('INDIVIDUAL_DUE_DATES'):
     FIELD_OVERRIDE_PROVIDERS += (
-        'courseware.student_field_overrides.IndividualStudentOverrideProvider'
+        'courseware.student_field_overrides.IndividualStudentOverrideProvider',
     )
