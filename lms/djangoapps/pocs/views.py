@@ -374,7 +374,8 @@ def poc_student_management(request, course):
         validate_email(email)
         if action == 'add':
             # by decree, no emails sent to students added this way
-            enroll_email(poc, email, email_students=False)
+            # by decree, any students added this way are auto_enrolled
+            enroll_email(poc, email, auto_enroll=True, email_students=False)
         elif action == 'revoke':
             unenroll_email(poc, email, email_students=False)
     except ValidationError:
