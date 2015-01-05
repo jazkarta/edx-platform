@@ -28,6 +28,7 @@ class PocFutureMembership(models.Model):
     """
     poc = models.ForeignKey(PersonalOnlineCourse, db_index=True)
     email = models.CharField(max_length=255)
+    auto_enroll = models.BooleanField(default=0)
 
 
 class PocFieldOverride(models.Model):
