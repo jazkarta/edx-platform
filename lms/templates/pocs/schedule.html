@@ -70,10 +70,10 @@
       <h2></h2>
     </header>
     <form role="form">
-      <div class="field">
+      <div class="field" id="datepair">
         <label></label>
-        <input type="date" name="date"/>
-        <input type="time" name="time"/>
+        <input placeholder="Date" class="date" type="text" name="date"/ size="11">
+        <input placeholder="Time" class="time" type="text" name="time"/ size="6">
       </div>
       <div class="field">
         <button type="submit" class="btn btn-primary">${_('Set date')}</button>
@@ -138,6 +138,15 @@
 </div>
 
 <script>
+$('#datepair .time').timepicker({
+    'showDuration': true,
+    'timeFormat': 'G:i'
+});
+$('#datepair .date').datepicker({
+    'dateFormat': 'yy-mm-dd',
+    'autoclose': true
+});
+
 var poc_schedule = (function () {
   var save_url = '${save_url}';
   var schedule = ${schedule};
