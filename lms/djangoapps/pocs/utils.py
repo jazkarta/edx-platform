@@ -80,7 +80,9 @@ def enroll_email(poc, student_email, auto_enroll=False, email_students=False, em
             email_params['full_name'] = previous_state.full_name
             send_mail_to_student(student_email, email_params)
     else:
-        membership = PocFutureMembership(poc=poc, email=student_email)
+        membership = PocFutureMembership(
+            poc=poc, auto_enroll=auto_enroll, email=student_email
+        )
         membership.save()
         if email_students:
             email_params['message'] = 'allowed_enroll'
