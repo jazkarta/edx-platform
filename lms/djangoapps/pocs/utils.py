@@ -247,9 +247,9 @@ def get_all_pocs_for_user(user):
     memberships = []
     for membership in active_poc_memberships:
         course = get_course_by_id(membership.poc.course_id)
-        course_title = get_course_about_section(course, 'title')
-        poc_title = 'POC: {}'.format(course_title)
-        mooc_title = 'MOOC: {}'.format(course_title)
+        poc = membership.poc
+        poc_title = poc.display_name
+        mooc_title = get_course_about_section(course, 'title')
         url = reverse(
             'switch_active_poc',
             args=[course.id.to_deprecated_string(), membership.poc.id]
