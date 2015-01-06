@@ -232,9 +232,9 @@ def set_grading_policy(request, course):
 
 
 def validate_date(year, month, day, hour, minute):
-    # simple validation for now
+    # avoid corrupting db if bad dates come in
     valid = True
-    if year < 2015 or year > 2100:
+    if year < 0:
         valid = False
     if month < 1 or month > 12:
         valid = False
