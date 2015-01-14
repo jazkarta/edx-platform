@@ -1074,6 +1074,8 @@ student_account_js = [
 
 student_profile_js = sorted(rooted_glob(PROJECT_ROOT / 'static', 'js/student_profile/**/*.js'))
 
+pocs_js = sorted(rooted_glob(PROJECT_ROOT / 'static', 'js/pocs/**/*.js'))
+
 PIPELINE_CSS = {
     'style-vendor': {
         'source_filenames': [
@@ -1252,6 +1254,10 @@ PIPELINE_JS = {
     'student_profile': {
         'source_filenames': student_profile_js,
         'output_filename': 'js/student_profile.js'
+    },
+    'pocs': {
+        'source_filenames': pocs_js,
+        'output_filename': 'js/pocs.js'
     },
 }
 
