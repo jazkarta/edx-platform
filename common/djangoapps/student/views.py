@@ -652,6 +652,17 @@ def dashboard(request):
     # Populate the Order History for the side-bar.
     order_history_list = order_history(user, course_org_filter=course_org_filter, org_filter_out_set=org_filter_out_set)
 
+    poc_membership_triplets = []
+    if settings.FEATURES.get('PERSONAL_ONLINE_COURSES', False):
+        from pocs import ACTIVE_POC_KEY
+        from pocs.utils import get_poc_membership_triplets
+        poc_membership_triplets = get_poc_membership_triplets(
+            user, course_org_filter, org_filter_out_set
+        )
+        # should we deselect any active POC at this time so that we don't have
+        # to change the URL for viewing a course?  I think so.
+        request.session[ACTIVE_POC_KEY] = None
+
     context = {
         'enrollment_message': enrollment_message,
         'course_enrollment_pairs': course_enrollment_pairs,
@@ -681,7 +692,8 @@ def dashboard(request):
         'platform_name': settings.PLATFORM_NAME,
         'enrolled_courses_either_paid': enrolled_courses_either_paid,
         'provider_states': [],
-        'order_history_list': order_history_list
+        'order_history_list': order_history_list,
+        'poc_membership_triplets': poc_membership_triplets,
     }
 
     if third_party_auth.is_enabled():
