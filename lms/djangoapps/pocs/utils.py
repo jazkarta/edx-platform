@@ -240,11 +240,8 @@ def get_all_pocs_for_user(user):
     current_active_poc = get_current_poc(user)
     if user.is_anonymous():
         return []
-    active_poc_memberships = PocMembership.objects.filter(
-        student=user, active__exact=True
-    )
     memberships = []
-    for membership in active_poc_memberships:
+    for membership in PocMembership.memberships_for_user(user):
         course = get_course_by_id(membership.poc.course_id)
         poc = membership.poc
         poc_title = poc.display_name
