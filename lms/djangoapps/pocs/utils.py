@@ -4,19 +4,18 @@ POC Enrollment operations for use by Coach APIs.
 Does not include any access control, be sure to check access before calling.
 """
 
+from courseware.courses import get_course_about_section
+from courseware.courses import get_course_by_id
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
-
-from courseware.courses import get_course_about_section
-from courseware.courses import get_course_by_id
 from edxmako.shortcuts import render_to_string
-
 from microsite_configuration import microsite
+from xmodule.modulestore.django import modulestore
+from xmodule.error_module import ErrorDescriptor
 
 from .models import (
-    PersonalOnlineCourse,
     PocMembership,
     PocFutureMembership,
 )
@@ -266,3 +265,30 @@ def get_all_pocs_for_user(user):
             'mooc_url': mooc_url,
         })
     return memberships
+
+def get_poc_membership_triplets(user, course_org_filter, org_filter_out_set):
+    """
+    Get the relevant set of (PersonalOnlineCourse, PocMembership, Course)
+    triplets to be displayed on a student's dashboard.
+    """
+    # only active memberships for now
+    for membership in PocMembership.memberships_for_user(user):
+        poc = membership.poc
+        store = modulestore()
+        with store.bulk_operations(poc.course_id):
+            course = store.get_course(poc.course_id)
+            if course and not isinstance(course, ErrorDescriptor):
+                # if we are in a Microsite, then filter out anything that is not
+                # attributed (by ORG) to that Microsite
+                if course_org_filter and course_org_filter != course.location.org:
+                    continue
+                # Conversely, if we are not in a Microsite, then let's filter out any enrollments
+                # with courses attributed (by ORG) to Microsites
+                elif course.location.org in org_filter_out_set:
+                    continue
+
+                yield (poc, membership, course)
+            else:
+                log.error("User {0} enrolled in {2} course {1}".format(
+                    user.username, poc.course_id, "broken" if course else "non-existent"
+                ))
