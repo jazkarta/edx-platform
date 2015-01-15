@@ -13,6 +13,7 @@ from status.status import get_site_status_msg
 
 <%! from microsite_configuration import microsite %>
 <%! from microsite_configuration.templatetags.microsite import platform_name %>
+<%! from pocs.overrides import get_current_poc %>
 
 ## Provide a hook for themes to inject branding on top.
 <%block name="navigation_top" />
