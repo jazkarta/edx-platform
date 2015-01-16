@@ -15,7 +15,7 @@ from ..field_overrides import (
 )
 
 
-TESTUSER = object()
+TESTUSER = "TESTUSER"
 
 
 @override_settings(FIELD_OVERRIDE_PROVIDERS=(
