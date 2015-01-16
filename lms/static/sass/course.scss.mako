@@ -77,7 +77,6 @@
 @import "xmodule/descriptors/css/module-styles.scss";
 
 // course - discussion
->>>>>>> Rudimentary display of course outline.
 @import "course/discussion/form-wmd-toolbar";
 
 // course - poc_coach
