@@ -318,6 +318,13 @@
             <textarea id="goals" name="goals" value="" ${'required aria-required="true"' if settings.REGISTRATION_EXTRA_FIELDS['goals'] == 'required' else ''}></textarea>
           </li>
           % endif
+          % if settings.REGISTRATION_EXTRA_FIELDS['organization'] != 'hidden':
+            <li class="field ${settings.REGISTRATION_EXTRA_FIELDS['organization']} text" id="field-organization">
+              <label for="organization">${_('Organization')}</label>
+              <input id="organization" type="text" name="organization"  ${'required aria-required="true"' if settings.REGISTRATION_EXTRA_FIELDS['organization'] == 'required' else ''} />
+            </li>
+		 % endif
+
         </ol>
       </div>
 
