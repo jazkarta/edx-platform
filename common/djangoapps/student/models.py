@@ -28,6 +28,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.db import models, IntegrityError
 from django.db.models import Count
+from django.db.models.signals import pre_save 
 from django.dispatch import receiver, Signal
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_noop
@@ -1232,3 +1233,13 @@ def enforce_single_login(sender, request, user, signal, **kwargs):
         else:
             key = None
         user.profile.set_login_session(key)
+
+
+## make email domain case insensitive
+@receiver(pre_save, sender=User)
+def User_pre_save(sender, instance, *args, **kwargs):
+    email = instance.email
+    if email:
+        uname, domain = email.split('@')
+        instance.email = '@'.join([uname,domain.lower()])
+
