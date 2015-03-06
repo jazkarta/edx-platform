@@ -67,9 +67,15 @@ class HtmlModule(HtmlFields, XModule):
     css = {'scss': [resource_string(__name__, 'css/html/display.scss')]}
 
     def get_html(self):
+        #import pdb; pdb.set_trace()
+        data = self.data
         if self.system.anonymous_student_id:
-            return self.data.replace("%%USER_ID%%", self.system.anonymous_student_id)
-        return self.data
+            data = data.replace("%%USER_ID%%", self.system.anonymous_student_id)
+            if getattr(self.system, 'get_real_user', None):
+                user = self.system.get_real_user(self.system.anonymous_student_id)
+                if user and user.is_authenticated():
+                    data = data.replace("%%USER_EMAIL%%", user.email)
+        return data
 
 
 class HtmlDescriptor(HtmlFields, XmlDescriptor, EditingDescriptor):
