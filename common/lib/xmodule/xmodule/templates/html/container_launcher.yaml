@@ -1,0 +1,52 @@
+---
+metadata:
+    display_name: Healthshare Site Launcher
+data: |
+    <div id="launcher1"></div>
+     
+    <script>
+      (function () {
+        var $url = '/csp/healthshare/HSREGISTRY/HS.UI.Home.cls';
+
+        var $launcher = $('#launcher1'); 
+        var $iframe = $('<iframe src="https://isc.appsembler.com/isc/deploy/" style="visibility: hidden" width="0" height="0"></iframe>');
+        $launcher.append($iframe);
+     
+        $launcher.append( $('<p>When you click the button below, a new HealthShare site will be started for you.</p>') );
+     
+        var $launch_button = $('<input type=button value="Launch HealthShare site" style="margin-bottom: 20px;" />');
+        $launcher.append( $launch_button );
+     
+        var $launcher_message = $('<p class="verify-button-success-text" style="font-weight: bold; color: #008200;"></p>'); 
+        $launcher.append( $launcher_message );
+        
+       var success_message_new_container = "Your HealthShare site has been launched, <br />It will run for the next 3 days.";
+       var success_message = "Your HealthShare site is already running and you can access it at";
+       var login_credentials = "<p>Username: root<br />Password: root</p>";
+        
+       $launch_button.click(function(event) {
+         $launch_button.attr('disabled', 'disabled');
+         $launch_button.val('Launching...');
+         $iframe[0].contentWindow.postMessage('prepareURL||%%USER_EMAIL%%||' + $url, "*");  
+       });
+     
+       window.addEventListener("message", receiveMessage, false);
+     
+       function receiveMessage(event) {
+         var cmd = event.data.split('||');
+         if(cmd[0] === 'siteDeployed') {
+           $launch_button.hide();
+           cmd[1] = cmd[1] + $url;
+           if(cmd[2] == '200') {
+                    $launcher_message.html(success_message + '<br>' + '<a href="' + cmd[1] + '" target="_blank">' + cmd[1] + '</a>' + login_credentials);       
+           } else {
+                    $launcher_message.html(success_message_new_container + '<br>' + '<a href="' + cmd[1] + '" target="_blank">' + cmd[1] + '</a>' + login_credentials);                
+           }
+         } else if (cmd[0] === 'deploymentError') {
+            $launch_button.hide();
+            $launcher_message.css('color', 'red').text(cmd[1]);       
+         }
+       } 
+      })();
+    </script>
+
