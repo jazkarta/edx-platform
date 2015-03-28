@@ -28,12 +28,11 @@ from opaque_keys.edx.keys import CourseKey
 from xmodule.modulestore.xml_importer import import_from_xml
 from xmodule.modulestore.xml_exporter import export_to_xml
 
-from .access import has_course_access
+from student.auth import has_course_author_access
 
 from extract_tar import safetar_extractall
-from student import auth
-from student.roles import CourseInstructorRole, CourseStaffRole, GlobalStaff
 from util.json_request import JsonResponse
+from util.views import ensure_valid_course_key
 
 from contentstore.utils import reverse_course_url, reverse_usage_url
 
@@ -52,6 +51,7 @@ CONTENT_RE = re.compile(r"(?P<start>\d{1,11})-(?P<stop>\d{1,11})/(?P<end>\d{1,11
 @login_required
 @ensure_csrf_cookie
 @require_http_methods(("GET", "POST", "PUT"))
+@ensure_valid_course_key
 def import_handler(request, course_key_string):
     """
     The restful handler for importing a course.
@@ -63,7 +63,7 @@ def import_handler(request, course_key_string):
         json: import a course via the .tar.gz file specified in request.FILES
     """
     course_key = CourseKey.from_string(course_key_string)
-    if not has_course_access(request.user, course_key):
+    if not has_course_author_access(request.user, course_key):
         raise PermissionDenied()
 
     if 'application/json' in request.META.get('HTTP_ACCEPT', 'application/json'):
@@ -152,7 +152,7 @@ def import_handler(request, course_key_string):
                         }]
                     })
             # Send errors to client with stage at which error occurred.
-            except Exception as exception:   # pylint: disable=W0703
+            except Exception as exception:   # pylint: disable=broad-except
                 _save_request_status(request, key, -1)
                 if course_dir.isdir():
                     shutil.rmtree(course_dir)
@@ -251,7 +251,7 @@ def import_handler(request, course_key_string):
                 _save_request_status(request, key, 4)
 
             # Send errors to client with stage at which error occurred.
-            except Exception as exception:   # pylint: disable=W0703
+            except Exception as exception:   # pylint: disable=broad-except
                 log.exception(
                     "error importing course"
                 )
@@ -299,6 +299,7 @@ def _save_request_status(request, key, status):
 @require_GET
 @ensure_csrf_cookie
 @login_required
+@ensure_valid_course_key
 def import_status_handler(request, course_key_string, filename=None):
     """
     Returns an integer corresponding to the status of a file import. These are:
@@ -312,7 +313,7 @@ def import_status_handler(request, course_key_string, filename=None):
 
     """
     course_key = CourseKey.from_string(course_key_string)
-    if not has_course_access(request.user, course_key):
+    if not has_course_author_access(request.user, course_key):
         raise PermissionDenied()
 
     try:
@@ -328,6 +329,7 @@ def import_status_handler(request, course_key_string, filename=None):
 @ensure_csrf_cookie
 @login_required
 @require_http_methods(("GET",))
+@ensure_valid_course_key
 def export_handler(request, course_key_string):
     """
     The restful handler for exporting a course.
@@ -344,7 +346,7 @@ def export_handler(request, course_key_string):
     which describes the error.
     """
     course_key = CourseKey.from_string(course_key_string)
-    if not has_course_access(request.user, course_key):
+    if not has_course_author_access(request.user, course_key):
         raise PermissionDenied()
 
     course_module = modulestore().get_course(course_key)
