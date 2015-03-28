@@ -92,8 +92,6 @@ class CourseDetails(object):
         raw_video = cls._fetch_about_attribute(course_key, 'video')
         if raw_video:
             course_details.intro_video = CourseDetails.parse_video_tag(raw_video)
-        except ItemNotFoundError:
-            pass
 
         return course_details
 
