@@ -9,6 +9,7 @@ import shutil
 import tarfile
 from path import path
 from tempfile import mkdtemp
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -354,7 +355,8 @@ def export_handler(request, course_key_string):
 
     export_url = reverse_course_url('export_handler', course_key) + '?_accept=application/x-tgz'
     if 'application/x-tgz' in requested_format:
-        name = course_module.url_name
+        #name = course_module.url_name
+        name = '%s_%s' % (str(datetime.now()).replace(' ',''), str(course_module.id).replace('/','-'))
         export_file = NamedTemporaryFile(prefix=name + '.', suffix=".tar.gz")
         root_dir = path(mkdtemp())
 
