@@ -793,6 +793,55 @@ def change_enrollment(request, auto_register=False):
     else:
         return HttpResponseBadRequest(_("Enrollment action is invalid"))
 
+@require_POST
+def multiple_enrollment(request):
+    user = request.user
+
+    courses = request.POST.get('courses', '').split(';')
+    if not courses:
+        return HttpResponseBadRequest(_("Course ids not specified"))
+
+    valid_courses = []
+    for course_id in courses:
+        try:
+            valid_course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+            valid_courses.append(valid_course_id)
+        except InvalidKeyError:
+            log.warning("User {username} tried to enroll with invalid course id: {course_id}".format(
+                username=user.username, course_id=course_id
+            ))
+            return HttpResponseBadRequest(_("Invalid course id: {0}".format(course_id)))
+
+    request.session['auto_register'] = True
+
+    if not user.is_authenticated():
+        return HttpResponseForbidden()
+
+    for course_id in valid_courses:
+        # Make sure the course exists
+        try:
+            course = modulestore().get_course(course_id)
+        except ItemNotFoundError:
+            log.warning("User {0} tried to enroll in non-existent course {1}"
+                        .format(user.username, course_id))
+            return HttpResponseBadRequest(_("Course id {0} is invalid".format(course_id)))
+
+        if not has_access(user, 'enroll', course):
+            return HttpResponseBadRequest(_("Enrollment for {0} is closed".format(course_id)))
+
+        # see if we have already filled up all allowed enrollments
+        is_course_full = CourseEnrollment.is_course_full(course)
+
+        if is_course_full:
+            return HttpResponseBadRequest(_("Course {0} is full".format(course_id)))
+
+        # check to see if user is currently enrolled in that course
+        if CourseEnrollment.is_enrolled(user, course_id):
+            pass
+
+        CourseEnrollment.enroll(user, course.id)
+
+    return HttpResponse()
 
 # TODO: This function is kind of gnarly/hackish/etc and is only used in one location.
 # It'd be awesome if we could get rid of it; manually parsing course_id strings form larger strings
