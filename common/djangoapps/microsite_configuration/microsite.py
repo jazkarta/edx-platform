@@ -24,15 +24,15 @@ def has_configuration_set():
     """
     Returns whether there is any Microsite configuration settings
     """
-    global last_read
-    try:
-        modified = os.path.getmtime(MICROSITE_JSON)
-    except OSError:
-        return getattr(settings, "MICROSITE_CONFIGURATION", False)
-    else:
-        if not last_read or modified > last_read:
-            settings.MICROSITE_CONFIGURATION = json.loads(open(MICROSITE_JSON).read())
-            last_read = modified
+#    global last_read
+#    try:
+#        modified = os.path.getmtime(MICROSITE_JSON)
+#    except OSError:
+#        return getattr(settings, "MICROSITE_CONFIGURATION", False)
+#    else:
+#        if not last_read or modified > last_read:
+#            settings.MICROSITE_CONFIGURATION = json.loads(open(MICROSITE_JSON).read())
+#            last_read = modified
 
     return getattr(settings, "MICROSITE_CONFIGURATION", False)
 
