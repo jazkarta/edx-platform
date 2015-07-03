@@ -627,7 +627,15 @@ def try_change_enrollment(request):
     called after a registration or login, as secondary action.
     It should not interrupt a successful registration or login.
     """
-    if 'enrollment_action' in request.POST:
+    # we may be coming from a login after new account activation was made
+    # as part of a learning path enrollment.  we will have already enrolled if we
+    # have this in the session
+    if 'start_course_id' in request.session:
+        redirect_url = '/courses/{}/courseware'.format(request.session['start_course_id'])
+        del request.session['start_course_id']
+        return redirect_url
+
+    elif 'enrollment_action' in request.POST:
         try:
             enrollment_response = change_enrollment(request)
             # There isn't really a way to display the results to the user, so we just log it
@@ -882,6 +890,7 @@ def validate_course_for_user_enrollment(user, course_id):
 @require_POST
 def learning_path_start(request):
     """
+    Enroll user in all courses in learning path.
     Send a logged-in user to the first module of the chosen course.
     Send an anonymous user through sign-in/registration process and enroll them
     in all of the courses in the learning path.  Upon completion send them
@@ -889,7 +898,7 @@ def learning_path_start(request):
     """
     start_course_id = request.POST.get('course_id','')
     if not start_course_id:
-        return HttpResponseBadRequest(_("No course ids passed for enrollment"))
+        return HttpResponseBadRequest(_("No course ids passed to start"))
 
     request.session['start_course_id'] = start_course_id
     return learning_path_enrollment(request)
@@ -1831,11 +1840,15 @@ def activate_account(request, key):
                 if cea.auto_enroll:
                     CourseEnrollment.enroll(student[0], cea.course_id)
 
+        if 'start_course_id' in request.session:
+            course_start_url = '/courses/{}/courseware'.format(request.session['start_course_id'])
+           
         resp = render_to_response(
             "registration/activation_complete.html",
             {
                 'user_logged_in': user_logged_in,
-                'already_active': already_active
+                'already_active': already_active,
+                'continue_to_course_url': course_start_url
             }
         )
         return resp
