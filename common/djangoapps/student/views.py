@@ -684,6 +684,7 @@ def change_enrollment(request, auto_register=False):
     """
     user = request.user
     multiple_enroll = True  # False
+    redir_url = None
 
     action = request.POST.get("enrollment_action")
     if 'course_id' not in request.POST:
@@ -801,7 +802,10 @@ def change_enrollment(request, auto_register=False):
                     del request.session['enroll_course_id']
                 if 'enroll_action' in request.session:
                     del request.session['enroll_action']
-                return HttpResponse()
+                if 'start_course_id' in request.session:
+                    redir_url = '/courses/{}/courseware'.format(request.session['start_course_id'])
+                    del request.session['start_course_id']
+                return HttpResponse(redir_url)
 
         except UserEnrollmentError as e:
             return HttpResponseBadRequest(str(e))
@@ -876,10 +880,25 @@ def validate_course_for_user_enrollment(user, course_id):
 
 
 @require_POST
+def learning_path_start(request):
+    """
+    Send a logged-in user to the first module of the chosen course.
+    Send an anonymous user through sign-in/registration process and enroll them
+    in all of the courses in the learning path.  Upon completion send them
+    to the first module of the chosen course.
+    """
+    start_course_id = request.POST.get('course_id','')
+    if not start_course_id:
+        return HttpResponseBadRequest(_("No course ids passed for enrollment"))
+
+    request.session['start_course_id'] = start_course_id
+    return learning_path_enrollment(request)
+
+
+@require_POST
 def learning_path_enrollment(request):
-    """ 
-    Enroll a logged-in user in all of the POSTed course ids and redirect to first module 
-    of new enrolled courses. 
+    """
+    Enroll a logged-in user in all of the POSTed course ids.
     Send an anonymous user through sign-in/registration process and enroll them in all
     POSTed course ids
     """
@@ -916,8 +935,16 @@ def learning_path_enrollment(request):
     except UserEnrollmentError as e:
         return HttpResponseBadRequest(str(e))
 
-    # TODO:  redirect to first module of first enrolled course
-    return HttpResponse()
+    # redirect to first module of chosen course if there is a session variable
+    # storing the requested course_id, or redirect to first module of first course id 
+    # passed for enrollment
+    if 'start_course_id' in request.session:
+        redir_url = '/courses/{}/courseware'.format(request.session['start_course_id'])
+        del request.session['start_course_id']
+    else:
+        redir_url = None
+
+    return HttpResponse(redir_url)
 
 
 # TODO: This function is kind of gnarly/hackish/etc and is only used in one location.

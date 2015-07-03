@@ -235,6 +235,8 @@ if settings.COURSEWARE_ENABLED:
             'student.views.change_enrollment', name="change_enrollment"),
         url(r'^learning_path_enrollment$',
              'student.views.learning_path_enrollment', name="learning_path_enrollment"),
+        url(r'^learning_path_start$',
+             'student.views.learning_path_start', name="learning_path_start"),
         url(r'^change_email_settings$', 'student.views.change_email_settings', name="change_email_settings"),
 
         # Used for an AB-test of auto-registration
