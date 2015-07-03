@@ -374,9 +374,9 @@ def register_user(request, extra_context=None):
         return external_auth.views.redirect_with_get('root', request.GET)
 
     context = {
-        'course_id': request.GET.get('course_id'),
+        'course_id': request.GET.get('course_id') or request.session.get('enrollment_course_id'),
         'email': '',
-        'enrollment_action': request.GET.get('enrollment_action'),
+        'enrollment_action': request.GET.get('enrollment_action') or request.session.get('enrollment_action'),
         'name': '',
         'running_pipeline': None,
         'platform_name': microsite.get_value(
@@ -389,6 +389,8 @@ def register_user(request, extra_context=None):
 
     # We save this so, later on, we can determine what course motivated a user's signup
     # if they actually complete the registration process
+    # For learning paths auto-enrollment, we will use this to complete enrollment after
+    # registration
     request.session['registration_course_id'] = context['course_id']
 
     if extra_context is not None:
@@ -585,6 +587,38 @@ def dashboard(request):
     return render_to_response('dashboard.html', context)
 
 
+def invite_to_courses(request, user, auto_enroll=True):
+    """
+    This method will create CourseEnrollmentAllowed records for the passed 
+    user for each course_id passed in the request, provided the user is 
+    allowed to enroll.
+    """
+    if 'course_id' not in request.POST:
+        return HttpResponseBadRequest(_("Course id not specified"))
+    course_id = request.POST.get("course_id")
+
+    try:
+        course_ids = validate_courses_for_enrollment(request)
+    except InvalidKeyError:
+        log.warning("User {username} tried to {action} with invalid course id: {course_id}".format(
+            username=user.username, action=action, course_id=request.POST.get("course_id")
+        ))
+        return HttpResponseBadRequest(_("Invalid course id"))
+
+    try:
+        for course_id in course_ids:
+            course = validate_course_for_user_enrollment(user, course_id)
+            cea = CourseEnrollmentAllowed(email=user.email, course_id=course.id, auto_enroll=True)
+            cea.save()
+    except UserEnrollmentError as e:
+        return HttpResponseBadRequest(str(e))
+
+    if 'enroll_course_id' in request.session:
+        del request.session['enroll_course_id']
+    if 'enroll_action' in request.session:
+        del request.session['enroll_action']
+
+
 def try_change_enrollment(request):
     """
     This method calls change_enrollment if the necessary POST
@@ -698,7 +732,8 @@ def change_enrollment(request, auto_register=False):
                 if multiple_enroll:
                     # always enroll with default mode for multiple enrollment
                     CourseEnrollment.enroll(user, course.id)
-                    return HttpResponse()
+
+                    # return HttpResponse()
 
                 # We use this flag to determine which condition of an AB-test
                 # for auto-registration we're currently in.
@@ -737,7 +772,7 @@ def change_enrollment(request, auto_register=False):
                         )
 
                     # Otherwise, there is only one mode available (the default)
-                    return HttpResponse()
+                    # return HttpResponse()
 
                 # If auto-registration is disabled, do NOT register the student
                 # before sending them to the "choose your track" page.
@@ -760,12 +795,16 @@ def change_enrollment(request, auto_register=False):
 
                     CourseEnrollment.enroll(user, course.id, mode=current_mode.slug)
 
-                    return HttpResponse()
+                    # return HttpResponse()
+
+                if 'enroll_course_id' in request.session:
+                    del request.session['enroll_course_id']
+                if 'enroll_action' in request.session:
+                    del request.session['enroll_action']
+                return HttpResponse()
 
         except UserEnrollmentError as e:
             return HttpResponseBadRequest(str(e))
-
-
 
     elif action == "add_to_cart":
         # Pass the request handling to shoppingcart.views
@@ -855,6 +894,10 @@ def learning_path_enrollment(request):
         # don't return HttpResponseForbidden or we'll lose our querystring
         login_url = reverse('signin_user') + \
             '?course_id={0}&enrollment_action=enroll'.format(urlquote_plus(courses_param))
+        # set session variables for the case the user will register... there are multiple
+        # pathways to registration after trying to enroll in the learning path courses
+        request.session['enrollment_course_id'] = courses_param
+        request.session['enrollment_action'] = "enroll"
         return HttpResponse(login_url)
 
     else:
@@ -1538,6 +1581,11 @@ def create_account(request, post_override=None):  # pylint: disable-msg=too-many
     (user, profile, registration) = ret
 
     dog_stats_api.increment("common.student.account_created")
+
+    # if registration was performed after enrollment intent, set auto-enroll
+    # for the courses so that the student will enrolled on account activation
+    if 'enrollment_action' in post_vars:
+        invite_to_courses(request, user)
 
     email = post_vars['email']
 
