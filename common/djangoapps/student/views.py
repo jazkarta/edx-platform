@@ -691,8 +691,7 @@ def change_enrollment(request, auto_register=False):
 
     """
     user = request.user
-    multiple_enroll = True  # False
-    redir_url = None
+    multiple_enroll = False
 
     action = request.POST.get("enrollment_action")
     if 'course_id' not in request.POST:
@@ -731,6 +730,8 @@ def change_enrollment(request, auto_register=False):
 
     if len(course_ids) > 1:
         multiple_enroll = True
+    else:
+        course_id = course_ids[0]        
 
     if action == "enroll":
         # Make sure the course exists
@@ -813,7 +814,9 @@ def change_enrollment(request, auto_register=False):
                 if 'start_course_id' in request.session:
                     redir_url = '/courses/{}/courseware'.format(request.session['start_course_id'])
                     del request.session['start_course_id']
-                return HttpResponse(redir_url)
+                    return HttpResponse(redir_url)
+
+                return HttpResponse()
 
         except UserEnrollmentError as e:
             return HttpResponseBadRequest(str(e))
@@ -1842,6 +1845,8 @@ def activate_account(request, key):
 
         if 'start_course_id' in request.session:
             course_start_url = '/courses/{}/courseware'.format(request.session['start_course_id'])
+        else:
+            course_start_url = ''
            
         resp = render_to_response(
             "registration/activation_complete.html",
