@@ -885,7 +885,7 @@ def validate_course_for_user_enrollment(user, course_id):
 
     # check to see if user is currently enrolled in that course
     if CourseEnrollment.is_enrolled(user, course_id):
-        pass
+        raise UserEnrollmentError(_("Student is already enrolled"))
 
     return course
 
