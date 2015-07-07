@@ -916,7 +916,6 @@ def learning_path_enrollment(request):
     Send an anonymous user through sign-in/registration process and enroll them in all
     POSTed course ids
     """
-
     user = request.user
     courses_param = request.POST.get('course_id', '')
     if not courses_param:
@@ -955,10 +954,9 @@ def learning_path_enrollment(request):
     if 'start_course_id' in request.session:
         redir_url = '/courses/{}/courseware'.format(request.session['start_course_id'])
         del request.session['start_course_id']
+        return HttpResponse(redir_url)
     else:
-        redir_url = None
-
-    return HttpResponse(redir_url)
+        return HttpResponse()
 
 
 # TODO: This function is kind of gnarly/hackish/etc and is only used in one location.
