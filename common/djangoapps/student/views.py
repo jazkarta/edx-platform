@@ -869,6 +869,8 @@ def validate_course_for_user_enrollment(user, course_id):
     # Make sure the course exists
     try:
         course = modulestore().get_course(course_id)
+        if not course:
+            raise ItemNotFoundError
     except ItemNotFoundError:
         log.warning("User {0} tried to enroll in non-existent course {1}"
                     .format(user.username, course_id))
