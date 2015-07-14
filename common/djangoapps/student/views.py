@@ -50,7 +50,7 @@ from student.models import (
     anonymous_id_for_user
 )
 from student.forms import PasswordResetFormNoActive
-from student.exceptions import UserEnrollmentError
+from student.exceptions import UserEnrollmentError, UserAlreadyEnrolledError
 
 from verify_student.models import SoftwareSecurePhotoVerification, MidcourseReverificationWindow
 from certificates.models import CertificateStatuses, certificate_status_for_student
@@ -887,7 +887,7 @@ def validate_course_for_user_enrollment(user, course_id):
 
     # check to see if user is currently enrolled in that course
     if CourseEnrollment.is_enrolled(user, course_id):
-        raise UserEnrollmentError(_("Student is already enrolled"))
+        raise UserAlreadyEnrolledError(_("Student is already enrolled"))
 
     return course
 
@@ -906,11 +906,11 @@ def learning_path_start(request):
         return HttpResponseBadRequest(_("No course ids passed to start"))
 
     request.session['start_course_id'] = start_course_id
-    return learning_path_enrollment(request)
+    return learning_path_enrollment(request, ignore_already_enrolled=True)
 
 
 @require_POST
-def learning_path_enrollment(request):
+def learning_path_enrollment(request, ignore_already_enrolled=False):
     """
     Enroll a logged-in user in all of the POSTed course ids.
     Send an anonymous user through sign-in/registration process and enroll them in all
@@ -945,6 +945,9 @@ def learning_path_enrollment(request):
         for course_id in valid_courses:
             course = validate_course_for_user_enrollment(user, course_id)
             CourseEnrollment.enroll(user, course.id)
+    except UserAlreadyEnrolledError:
+        if ignore_already_enrolled:
+            pass            
     except UserEnrollmentError as e:
         return HttpResponseBadRequest(str(e))
 
